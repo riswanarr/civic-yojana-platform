@@ -65,3 +65,23 @@ export type SchemeFilters = {
   page?: number;
   pageSize?: number;
 };
+
+export type Recommendation = {
+  scheme_id: string;
+  title: string;
+  score: number;
+  reason: string;
+};
+
+export type RecommendationResponse = {
+  recommendations: Recommendation[];
+};
+export type EligibilityResponse = {
+  scheme_id: string;
+  scheme_title: string;
+  eligibility_score: number;
+  status: string;
+  matched_criteria: string[];
+  missing_requirements: string[];
+  reason: string;
+};
