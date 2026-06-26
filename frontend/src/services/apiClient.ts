@@ -18,5 +18,41 @@ export const apiClient = {
     }
 
     return response.json() as Promise<T>;
+  },
+
+  async post<T>(path: string, body: unknown, accessToken?: string): Promise<T> {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || "Request failed.");
+    }
+
+    return response.json() as Promise<T>;
+  },
+
+  async delete<T>(path: string, accessToken?: string): Promise<T> {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "DELETE",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`
+          }
+        : undefined
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || "Request failed.");
+    }
+
+    return response.json() as Promise<T>;
   }
 };

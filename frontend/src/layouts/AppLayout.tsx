@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bookmark, ClipboardList, LayoutDashboard, Menu, Search, User, X } from "lucide-react";
+import { Bookmark, ClipboardList, LayoutDashboard, MessageCircle, Menu, Search, User, X } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { useProfileStore } from "@/store/profileStore";
@@ -10,6 +10,7 @@ const SIDEBAR_ITEMS = [
   { label: "Explore Schemes", to: "/schemes", icon: Search },
   { label: "Saved Schemes", to: "/saved", icon: Bookmark },
   { label: "Applications", to: "/applications", icon: ClipboardList },
+  { label: "Chat Assistant", to: "/chatbot", icon: MessageCircle },
   { label: "Profile", to: "/profile", icon: User }
 ];
 

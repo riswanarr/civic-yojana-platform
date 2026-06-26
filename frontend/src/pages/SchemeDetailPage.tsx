@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, ExternalLink, XCircle } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { LoadingState } from "@/components/dashboard/LoadingState";
@@ -8,6 +8,10 @@ import { useSchemeStore } from "@/store/schemeStore";
 import { apiClient } from "@/services/apiClient";
 import { useAuthStore } from "@/store/authStore";
 import type { EligibilityResponse } from "@/types";
+
+function formatScore(score: number) {
+  return score > 1 ? Math.round(score) : Math.round(score * 100);
+}
 
 export function SchemeDetailPage() {
   const { schemeId } = useParams();
@@ -196,39 +200,94 @@ export function SchemeDetailPage() {
 
       {eligibility ? (
         <div className="rounded-md border bg-background p-5">
-          <h2 className="text-lg font-semibold">
-            Eligibility Result
-          </h2>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">
+                Eligibility Result
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                A profile-based explanation of how this match was scored.
+              </p>
+            </div>
 
-          <p className="mt-3">
-            <strong>Score:</strong>{" "}
-            {eligibility.eligibility_score}
-          </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:min-w-80">
+              <div className="rounded-md border bg-muted/30 p-3">
+                <p className="text-xs font-medium uppercase text-muted-foreground">
+                  Eligibility Score
+                </p>
+                <p className="mt-1 text-2xl font-semibold">
+                  {formatScore(eligibility.eligibility_score)}%
+                </p>
+              </div>
 
-          <p className="mt-2">
-            <strong>Status:</strong>{" "}
-            {eligibility.status}
-          </p>
-
-          <div className="mt-4">
-            <h3 className="font-medium">
-              Matched Criteria
-            </h3>
-
-            <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
-              {eligibility.matched_criteria.map(
-                (item) => (
-                  <li key={item}>
-                    {item}
-                  </li>
-                )
-              )}
-            </ul>
+              <div className="rounded-md border bg-muted/30 p-3">
+                <p className="text-xs font-medium uppercase text-muted-foreground">
+                  Eligibility Status
+                </p>
+                <p className="mt-2 w-fit rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
+                  {eligibility.status}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <p className="mt-4 text-sm text-muted-foreground">
-            {eligibility.reason}
-          </p>
+          <div className="mt-5 rounded-md border bg-muted/20 p-4">
+            <div className="flex gap-3">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div>
+                <h3 className="text-sm font-semibold">
+                  Why this score was assigned
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {eligibility.reason}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <section className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">
+                Matched Criteria
+              </h3>
+
+              {eligibility.matched_criteria.length ? (
+                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  {eligibility.matched_criteria.map((item) => (
+                    <li className="flex gap-2" key={item}>
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  No matched criteria were returned for this profile.
+                </p>
+              )}
+            </section>
+
+            <section className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">
+                Missing Criteria
+              </h3>
+
+              {eligibility.missing_requirements.length ? (
+                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  {eligibility.missing_requirements.map((item) => (
+                    <li className="flex gap-2" key={item}>
+                      <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  No missing criteria were identified.
+                </p>
+              )}
+            </section>
+          </div>
         </div>
       ) : null}
 

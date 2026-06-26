@@ -57,6 +57,14 @@ export type SchemeListResponse = {
   total: number;
 };
 
+export type SavedScheme = Scheme & {
+  saved_at?: string;
+};
+
+export type SavedSchemesResponse = {
+  items: SavedScheme[];
+};
+
 export type SchemeFilters = {
   search?: string;
   state?: string;
