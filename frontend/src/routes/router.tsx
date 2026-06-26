@@ -8,6 +8,7 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { LoginPage } from "@/pages/LoginPage";
+import { OnboardingPage } from "@/pages/OnboardingPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { SavedSchemesPage } from "@/pages/SavedSchemesPage";
 import { SchemeDetailPage } from "@/pages/SchemeDetailPage";
@@ -16,6 +17,14 @@ import { SchemesPage } from "@/pages/SchemesPage";
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
+  {
+    path: "/onboarding",
+    element: (
+      <ProtectedRoute requireCompletedProfile={false} redirectCompletedProfile>
+        <OnboardingPage />
+      </ProtectedRoute>
+    )
+  },
   {
     path: "/",
     element: (
