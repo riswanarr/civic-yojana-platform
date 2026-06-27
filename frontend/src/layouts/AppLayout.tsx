@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Bookmark, ClipboardList, LayoutDashboard, MessageCircle, Menu, Search, User, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Bookmark, ClipboardList, LayoutDashboard, MessageCircle, Menu, Search, User, X } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { useNotificationStore } from "@/store/notificationStore";
 import { useProfileStore } from "@/store/profileStore";
 import { cn } from "@/lib/utils";
 
@@ -14,13 +15,44 @@ const SIDEBAR_ITEMS = [
   { label: "Profile", to: "/profile", icon: User }
 ];
 
+function formatNotificationTime(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date);
+}
+
 export function AppLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.session?.access_token);
   const logout = useAuthStore((state) => state.logout);
   const isLoading = useAuthStore((state) => state.isLoading);
   const profile = useProfileStore((state) => state.profile);
+  const notifications = useNotificationStore((state) => state.notifications);
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const notificationError = useNotificationStore((state) => state.error);
+  const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
+  const markAsRead = useNotificationStore((state) => state.markAsRead);
+  const resetNotifications = useNotificationStore((state) => state.resetNotifications);
+
+  useEffect(() => {
+    if (accessToken) {
+      void fetchNotifications();
+      return;
+    }
+
+    resetNotifications();
+  }, [accessToken, fetchNotifications, resetNotifications]);
 
   async function handleLogout() {
     await logout();
@@ -100,6 +132,63 @@ export function AppLayout() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              <details className="relative">
+                <summary className="relative flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-md border text-muted-foreground hover:text-foreground">
+                  <Bell className="h-4 w-4" />
+                  {unreadCount > 0 ? (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  ) : null}
+                </summary>
+
+                <div className="absolute right-0 mt-2 w-80 rounded-md border bg-background p-3 shadow-sm">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h2 className="text-sm font-semibold">Notifications</h2>
+                    <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
+                  </div>
+
+                  {notificationError ? (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+                      {notificationError}
+                    </div>
+                  ) : null}
+
+                  <div className="max-h-80 space-y-2 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <p className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+                        No notifications yet.
+                      </p>
+                    ) : (
+                      notifications.map((notification) => (
+                        <button
+                          className={cn(
+                            "w-full rounded-md border p-3 text-left text-sm transition hover:border-primary/60",
+                            notification.is_read ? "bg-background" : "bg-primary/5"
+                          )}
+                          key={notification.id}
+                          type="button"
+                          onClick={() => void markAsRead(notification.id)}
+                        >
+                          <span className="flex items-start justify-between gap-3">
+                            <span className="font-medium">{notification.title}</span>
+                            {!notification.is_read ? (
+                              <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                            ) : null}
+                          </span>
+                          <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                            {notification.message}
+                          </span>
+                          <span className="mt-2 block text-[11px] text-muted-foreground">
+                            {formatNotificationTime(notification.created_at)}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </details>
+
               <details className="relative">
                 <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
