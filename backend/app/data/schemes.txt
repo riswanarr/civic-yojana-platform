@@ -1,0 +1,503 @@
+SCHEME: Post-Matric Scholarship for OBC Students
+CATEGORY: Scholarship
+ELIGIBILITY: OBC students studying post-matric (Class 11 and above). Annual family income below 1 lakh rupees. Must be Indian citizen.
+BENEFITS: Maintenance allowance per month, reimbursement of compulsory non-refundable fees, study tour charges covered.
+DOCUMENTS: Income certificate, OBC caste certificate, previous marksheet, Aadhaar card, bank passbook, institution verification form, domicile certificate, passport photo.
+DEADLINE: October 31 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Post-Matric Scholarship for SC Students
+CATEGORY: Scholarship
+ELIGIBILITY: SC students in Class 11 and above. Annual family income below 2.5 lakh rupees. Must be Indian citizen.
+BENEFITS: Day scholars get Rs 150-350 per month maintenance. Hostellers get Rs 750-1000 per month. Fees reimbursed.
+DOCUMENTS: SC caste certificate, income certificate, Aadhaar card, bank passbook, previous marksheet, domicile certificate.
+DEADLINE: October 31 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Post-Matric Scholarship for ST Students
+CATEGORY: Scholarship
+ELIGIBILITY: ST students in Class 11 and above. Annual family income below 2.5 lakh rupees.
+BENEFITS: Maintenance allowance, tuition fees, study material allowance. Hostellers get higher allowance.
+DOCUMENTS: ST caste certificate, income certificate, Aadhaar card, bank passbook, marksheet.
+DEADLINE: October 31 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Pre-Matric Scholarship for SC Students
+CATEGORY: Scholarship
+ELIGIBILITY: SC students in Class 9 and 10. Family income below 2 lakh per year.
+BENEFITS: Day scholars Rs 150 per month. Hostellers Rs 750 per month. Book grant and ad-hoc grant also given.
+DOCUMENTS: SC certificate, income certificate, Aadhaar, school bonafide certificate, bank account.
+DEADLINE: October 31 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Pre-Matric Scholarship for OBC Students
+CATEGORY: Scholarship
+ELIGIBILITY: OBC students in Class 1 to 10. Annual family income below 44,500 rupees.
+BENEFITS: Rs 25 to Rs 150 per month depending on class. Book grant of Rs 750 per year.
+DOCUMENTS: OBC certificate, income certificate, Aadhaar, school certificate, bank account.
+DEADLINE: October 31 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: National Scholarship Portal - Merit cum Means Scholarship
+CATEGORY: Scholarship
+ELIGIBILITY: Students from minority communities (Muslim, Christian, Sikh, Buddhist, Jain, Zoroastrian). Family income below 2.5 lakh per year. Must score 50 percent in previous exam.
+BENEFITS: Rs 10,000 per year for professional and technical courses. Rs 5,000 per year for other courses.
+DOCUMENTS: Minority community certificate, income certificate, previous marksheet, Aadhaar, bank account, bonafide certificate.
+DEADLINE: October 15 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Pre-Matric Scholarship for Minority Students
+CATEGORY: Scholarship
+ELIGIBILITY: Minority community students in Class 1 to 10. Family income below 1 lakh per year. Must score 50 percent marks.
+BENEFITS: Rs 1,000 per year for day scholars. Rs 5,000 per year for hostellers. Maintenance allowance included.
+DOCUMENTS: Minority certificate, income certificate, marksheet, Aadhaar, bank account.
+DEADLINE: September 30 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Post-Matric Scholarship for Minority Students
+CATEGORY: Scholarship
+ELIGIBILITY: Minority community students in Class 11 and above including professional courses. Family income below 2 lakh per year.
+BENEFITS: Course fees up to Rs 10,000. Maintenance allowance Rs 570 to Rs 1,200 per month.
+DOCUMENTS: Minority certificate, income certificate, admission letter, marksheet, Aadhaar, bank account.
+DEADLINE: October 15 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: AICTE Pragati Scholarship for Girls
+CATEGORY: Scholarship
+ELIGIBILITY: Girl students admitted to AICTE approved degree or diploma technical institutions. Family income below 8 lakh per year. Only one girl per family eligible.
+BENEFITS: Rs 50,000 per year for tuition and other expenses.
+DOCUMENTS: AICTE institution admission letter, income certificate, Aadhaar, bank account, marksheet, gender certificate.
+DEADLINE: November 30 every year
+APPLY AT: https://scholarships.gov.in or https://aicte-india.org
+STATES: All India
+
+SCHEME: AICTE Saksham Scholarship for Specially-Abled Students
+CATEGORY: Scholarship
+ELIGIBILITY: Differently abled students (40 percent or more disability) in AICTE approved technical institutions. Family income below 8 lakh per year.
+BENEFITS: Rs 50,000 per year for tuition and other expenses.
+DOCUMENTS: Disability certificate, AICTE institution letter, income certificate, Aadhaar, bank account.
+DEADLINE: November 30 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Central Sector Scheme of Scholarship for College and University Students
+CATEGORY: Scholarship
+ELIGIBILITY: Students who scored above 80th percentile in Class 12 board exams. Family income below 4.5 lakh per year. Must study in regular degree courses.
+BENEFITS: Rs 10,000 per year for first three years of undergraduate. Rs 20,000 per year for postgraduate.
+DOCUMENTS: Class 12 marksheet, income certificate, Aadhaar, bank account, college admission proof.
+DEADLINE: October 31 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: UGC NET Junior Research Fellowship
+CATEGORY: Fellowship / Research
+ELIGIBILITY: Indian nationals who qualify UGC NET exam. Master's degree with 55 percent marks. 50 percent for SC/ST/OBC/PH candidates. Age limit 30 years, relaxed for reserved categories.
+BENEFITS: Rs 31,000 per month for first two years. Rs 35,000 per month thereafter. Contingency grant Rs 10,000 per year. HRA as per university norms.
+DOCUMENTS: NET scorecard, Masters degree certificate, caste certificate if applicable, Aadhaar, bank account.
+DEADLINE: Applications twice a year - June exam in December, December exam in June
+APPLY AT: https://ugcnet.nta.nic.in
+STATES: All India
+
+SCHEME: CSIR UGC NET Junior Research Fellowship
+CATEGORY: Fellowship / Research
+ELIGIBILITY: Indian nationals qualifying CSIR UGC NET in science subjects (Life Sciences, Chemical Sciences, Physical Sciences, Mathematical Sciences, Earth Sciences). Age limit 28 years.
+BENEFITS: Rs 31,000 per month for two years. Rs 35,000 after SRF upgrade. Contingency Rs 20,000 per year.
+DOCUMENTS: CSIR NET scorecard, BSc/MSc certificate, Aadhaar, bank account.
+DEADLINE: Twice a year - June and December
+APPLY AT: https://csirhrdg.res.in
+STATES: All India
+
+SCHEME: INSPIRE Scholarship for Higher Education
+CATEGORY: Scholarship
+ELIGIBILITY: Top 1 percent students in Class 12 board exams pursuing natural and basic sciences at BSc and MSc level. Must rank in top 10,000 in JEE or top 1 percent in board.
+BENEFITS: Rs 80,000 per year for five years during BSc/BS/MSc integrated course.
+DOCUMENTS: Class 12 marksheet showing top 1 percent, college admission proof, Aadhaar, bank account.
+DEADLINE: Applications open after Class 12 results
+APPLY AT: https://online-inspire.gov.in
+STATES: All India
+
+SCHEME: Kishore Vaigyanik Protsahan Yojana KVPY Fellowship
+CATEGORY: Fellowship / Research
+ELIGIBILITY: Indian students in Class 11, 12 or first year of BSc/BS interested in research in basic sciences. Selected through aptitude test and interview.
+BENEFITS: Rs 5,000 to Rs 7,000 per month stipend. Annual contingency grant Rs 20,000 to Rs 28,000.
+DOCUMENTS: School/college marksheets, KVPY aptitude test result, Aadhaar, bank account.
+DEADLINE: July every year for aptitude test
+APPLY AT: https://kvpy.iisc.ac.in
+STATES: All India
+
+SCHEME: Ishan Uday Special Scholarship for North East Region
+CATEGORY: Scholarship
+ELIGIBILITY: Students from North East states (Arunachal Pradesh, Assam, Manipur, Meghalaya, Mizoram, Nagaland, Sikkim, Tripura) pursuing graduation in general or technical courses. Family income below 4.5 lakh.
+BENEFITS: Rs 5,400 to Rs 7,800 per month for technical courses. Rs 3,000 to Rs 3,800 per month for general courses.
+DOCUMENTS: Domicile certificate of NE state, income certificate, admission proof, marksheet, Aadhaar, bank account.
+DEADLINE: October 31 every year
+APPLY AT: https://scholarships.gov.in
+STATES: Arunachal Pradesh, Assam, Manipur, Meghalaya, Mizoram, Nagaland, Sikkim, Tripura
+
+SCHEME: Begum Hazrat Mahal National Scholarship for Minorities
+CATEGORY: Scholarship
+ELIGIBILITY: Girl students from minority communities (Muslim, Christian, Sikh, Buddhist, Zoroastrian, Jain) in Class 9 to 12. Family income below 2 lakh per year. Must score 50 percent marks.
+BENEFITS: Rs 5,000 per year for Class 9 and 10. Rs 6,000 per year for Class 11 and 12.
+DOCUMENTS: Minority community certificate, income certificate, marksheet, school bonafide, Aadhaar, bank account.
+DEADLINE: September 30 every year
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: National Means cum Merit Scholarship NMMS
+CATEGORY: Scholarship
+ELIGIBILITY: Students in Class 8 who want to continue to Class 9. Family income below 1.5 lakh per year. Must qualify state level NMMS exam. Score 55 percent in Class 7.
+BENEFITS: Rs 12,000 per year (Rs 1,000 per month) from Class 9 to Class 12.
+DOCUMENTS: Class 7 and 8 marksheets, income certificate, state NMMS result, Aadhaar, bank account, school certificate.
+DEADLINE: Application through state governments after NMMS exam results
+APPLY AT: https://scholarships.gov.in
+STATES: All India
+
+SCHEME: Maulana Azad National Fellowship for Minority Students
+CATEGORY: Fellowship / Research
+ELIGIBILITY: Students from minority communities (Muslim, Christian, Sikh, Buddhist, Zoroastrian, Jain) pursuing MPhil or PhD. Must qualify NET or GATE or equivalent. Family income below 6 lakh.
+BENEFITS: JRF Rs 31,000 per month for two years. SRF Rs 35,000 per month for three years. Contingency and HRA additional.
+DOCUMENTS: Minority certificate, income certificate, admission letter from university, NET/GATE scorecard, Aadhaar, bank account.
+DEADLINE: Applications open through UGC website
+APPLY AT: https://minorityaffairs.gov.in or UGC website
+STATES: All India
+
+SCHEME: Indira Gandhi Scholarship for Single Girl Child
+CATEGORY: Scholarship
+ELIGIBILITY: Single girl child of her parents pursuing postgraduate education (first year of PG). Age below 30 years. Any category, any subject.
+BENEFITS: Rs 36,200 per year for two years of postgraduate study.
+DOCUMENTS: Affidavit that she is single girl child of parents, PG admission proof, marksheets, Aadhaar, bank account.
+DEADLINE: Through UGC - usually October every year
+APPLY AT: https://ugc.ac.in
+STATES: All India
+
+SCHEME: PM Yashasvi Scholarship for OBC EBC DNT Students
+CATEGORY: Scholarship
+ELIGIBILITY: OBC, EBC (Economically Backward Classes), and DNT (De-Notified Tribes) students in Class 9 to 12. Family income below 2.5 lakh per year. Selected through PM YASASVI entrance test.
+BENEFITS: Rs 75,000 per year for Class 9 and 10. Rs 1,25,000 per year for Class 11 and 12.
+DOCUMENTS: OBC/EBC/DNT certificate, income certificate, YASASVI test result, school bonafide, Aadhaar, bank account.
+DEADLINE: October every year
+APPLY AT: https://yet.nta.ac.in
+STATES: All India
+
+SCHEME: GATE Graduate Aptitude Test in Engineering Fellowship
+CATEGORY: Fellowship / Research
+ELIGIBILITY: Engineering graduates who qualify GATE exam with valid scorecard. For admission to MTech and PhD programs with MHRD scholarship.
+BENEFITS: Rs 12,400 per month stipend for MTech students in GATE sponsored seats. PhD students get Rs 31,000 per month.
+DOCUMENTS: GATE scorecard, engineering degree, Aadhaar, bank account, admission letter.
+DEADLINE: GATE exam in February every year. Application in September.
+APPLY AT: https://gate.iit.in
+STATES: All India
+
+SCHEME: ICMR Junior Research Fellowship
+CATEGORY: Fellowship / Research
+ELIGIBILITY: Life science or health science graduates with 55 percent marks. Selected through ICMR JRF entrance exam. Age limit 28 years.
+BENEFITS: Rs 31,000 per month for first two years. Rs 35,000 per month thereafter. HRA and contingency additional.
+DOCUMENTS: Degree certificate, ICMR JRF result, Aadhaar, bank account, admission letter from institute.
+DEADLINE: ICMR JRF exam held in July. Applications in April.
+APPLY AT: https://icmr.gov.in
+STATES: All India
+
+SCHEME: DBT Junior Research Fellowship Biotechnology
+CATEGORY: Fellowship / Research
+ELIGIBILITY: Life science or biotechnology graduates who qualify GATE or DBT JRF exam. For pursuing PhD in biotechnology.
+BENEFITS: Rs 31,000 per month for first two years. Rs 35,000 per month for next three years.
+DOCUMENTS: GATE/DBT JRF scorecard, degree certificate, admission letter, Aadhaar, bank account.
+DEADLINE: DBT JRF exam in September. Applications in June.
+APPLY AT: https://dbtindia.gov.in
+STATES: All India
+
+SCHEME: UPSC Civil Services Examination IAS IPS IFS
+CATEGORY: Government Job
+ELIGIBILITY: Indian citizen. Age 21 to 32 years. Relaxation for OBC 3 years, SC/ST 5 years, PH 10 years. Graduate in any subject from recognized university. No minimum marks required.
+BENEFITS: Group A Central Government services. Starting salary Rs 56,100 per month plus DA, HRA, allowances. Pension, housing, and other perks.
+DOCUMENTS: Graduation certificate, age proof, category certificate if applicable, Aadhaar, photograph, signature.
+DEADLINE: Notification in February. Prelims in June. Mains in September. Interview in March next year.
+APPLY AT: https://upsc.gov.in
+STATES: All India
+
+SCHEME: SSC CGL Combined Graduate Level Examination
+CATEGORY: Government Job
+ELIGIBILITY: Indian citizen aged 18 to 32 years (varies by post). Graduate from recognized university. Age relaxation for OBC, SC, ST, PH, Ex-servicemen.
+BENEFITS: Group B and C posts in central government ministries. Salary Rs 25,500 to Rs 1,51,100 per month. Government perks and pension.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification usually in April. Tier 1 exam in July. Tier 2 in November.
+APPLY AT: https://ssc.nic.in
+STATES: All India
+
+SCHEME: SSC CHSL Combined Higher Secondary Level Examination
+CATEGORY: Government Job
+ELIGIBILITY: Indian citizen aged 18 to 27 years. Must have passed Class 12 from recognized board. Age relaxation for reserved categories.
+BENEFITS: LDC, DEO, PA, SA posts in central government offices. Salary Rs 19,900 to Rs 63,200 per month. Government benefits included.
+DOCUMENTS: Class 12 certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification in December. Tier 1 exam in March. Tier 2 in June.
+APPLY AT: https://ssc.nic.in
+STATES: All India
+
+SCHEME: SSC MTS Multi Tasking Staff Examination
+CATEGORY: Government Job
+ELIGIBILITY: Indian citizen aged 18 to 25 years. Must have passed Class 10 from recognized board. Age relaxation for reserved categories.
+BENEFITS: Group C non-gazetted posts in central government. Salary Rs 18,000 to Rs 56,900 per month.
+DOCUMENTS: Class 10 certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification in June. Exam in October.
+APPLY AT: https://ssc.nic.in
+STATES: All India
+
+SCHEME: SSC GD Constable Examination
+CATEGORY: Government Job
+ELIGIBILITY: Indian citizen aged 18 to 23 years. Must have passed Class 10. Physical and medical fitness required. Age relaxation for OBC, SC, ST.
+BENEFITS: Constable posts in BSF, CISF, CRPF, SSB, ITBP, AR, SSF, NCB. Salary Rs 21,700 to Rs 69,100 per month.
+DOCUMENTS: Class 10 certificate, age proof, category certificate, Aadhaar, photograph, physical fitness certificate.
+DEADLINE: Notification in November. Exam in February.
+APPLY AT: https://ssc.nic.in
+STATES: All India
+
+SCHEME: IBPS PO Probationary Officer Examination
+CATEGORY: Government Job / Banking
+ELIGIBILITY: Indian citizen aged 20 to 30 years. Graduate from recognized university. Age relaxation for OBC 3 years, SC/ST 5 years.
+BENEFITS: Probationary Officer posts in nationalized banks. Starting salary Rs 52,000 per month plus allowances. Bank perks and promotions.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification in August. Prelims in October. Mains in November. Interview in January.
+APPLY AT: https://ibps.in
+STATES: All India
+
+SCHEME: IBPS Clerk Examination
+CATEGORY: Government Job / Banking
+ELIGIBILITY: Indian citizen aged 20 to 28 years. Graduate from recognized university. Must know local language. Age relaxation for reserved categories.
+BENEFITS: Clerk posts in nationalized banks. Salary Rs 29,000 to Rs 50,000 per month plus allowances.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, local language proof.
+DEADLINE: Notification in September. Prelims in December. Mains in January.
+APPLY AT: https://ibps.in
+STATES: All India
+
+SCHEME: IBPS SO Specialist Officer Examination
+CATEGORY: Government Job / Banking
+ELIGIBILITY: Graduate with relevant specialization (IT, Law, Agriculture, HR, Marketing). Age 20 to 30 years. Age relaxation for reserved categories.
+BENEFITS: Specialist Officer posts in nationalized banks. Salary Rs 36,000 to Rs 63,000 per month.
+DOCUMENTS: Specialized graduation degree, age proof, category certificate, Aadhaar.
+DEADLINE: Notification in November. Exam in January.
+APPLY AT: https://ibps.in
+STATES: All India
+
+SCHEME: SBI PO State Bank of India Probationary Officer
+CATEGORY: Government Job / Banking
+ELIGIBILITY: Indian citizen aged 21 to 30 years. Graduate from recognized university. Age relaxation for reserved categories.
+BENEFITS: PO posts in SBI. Starting salary Rs 41,960 per month with allowances. Total CTC approximately Rs 16 lakh per year.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification in April. Prelims in June. Mains in August. Interview in November.
+APPLY AT: https://sbi.co.in/careers
+STATES: All India
+
+SCHEME: SBI Clerk Junior Associate Examination
+CATEGORY: Government Job / Banking
+ELIGIBILITY: Indian citizen aged 20 to 28 years. Graduate from recognized university. Proficiency in local language required.
+BENEFITS: Junior Associate posts in SBI branches. Salary Rs 26,000 to Rs 40,000 per month with allowances.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar.
+DEADLINE: Notification in January. Prelims in February. Mains in March.
+APPLY AT: https://sbi.co.in/careers
+STATES: All India
+
+SCHEME: RRB NTPC Non-Technical Popular Categories
+CATEGORY: Government Job / Railway
+ELIGIBILITY: Indian citizen. Age 18 to 33 years depending on post. Class 12 or graduation required depending on category. Age relaxation for OBC, SC, ST.
+BENEFITS: Station Master, Goods Guard, Senior Commercial cum Ticket Clerk, Traffic Assistant and other posts in Indian Railways. Salary Rs 19,900 to Rs 92,300 per month.
+DOCUMENTS: Class 12 or graduation certificate, age proof, category certificate, Aadhaar.
+DEADLINE: Notification every 2 to 3 years. Applications open for 30 days.
+APPLY AT: https://indianrailways.gov.in or respective RRB zone website
+STATES: All India
+
+SCHEME: RRB Group D Level 1 Posts Railway
+CATEGORY: Government Job / Railway
+ELIGIBILITY: Indian citizen aged 18 to 33 years. Must have passed Class 10 and ITI. Physical efficiency test required. Age relaxation for reserved categories.
+BENEFITS: Track Maintainer, Helper, Porter and similar posts. Salary Rs 18,000 to Rs 56,900 per month.
+DOCUMENTS: Class 10 certificate, ITI certificate, age proof, category certificate, Aadhaar.
+DEADLINE: Notification every few years. Applications open for 30 days.
+APPLY AT: https://indianrailways.gov.in or respective RRB zone website
+STATES: All India
+
+SCHEME: RRB ALP Assistant Loco Pilot Technician
+CATEGORY: Government Job / Railway
+ELIGIBILITY: Indian citizen aged 18 to 28 years. Class 10 with ITI or diploma in relevant engineering trade. Age relaxation for reserved categories.
+BENEFITS: Assistant Loco Pilot and Technician posts in Indian Railways. Salary Rs 19,900 to Rs 63,200 per month.
+DOCUMENTS: Class 10 certificate, ITI or diploma, age proof, category certificate, Aadhaar.
+DEADLINE: Notification every few years.
+APPLY AT: https://indianrailways.gov.in or respective RRB zone website
+STATES: All India
+
+SCHEME: UPSC NDA National Defence Academy Examination
+CATEGORY: Government Job / Defence
+ELIGIBILITY: Indian male citizens (and unmarried female from 2022). Age 16.5 to 19.5 years. Class 12 passed or appearing. Physics and Maths required for Army and Navy wings.
+BENEFITS: Training at NDA Pune followed by commission as officer in Indian Army, Navy or Air Force. Starting salary Rs 56,100 per month as Lieutenant. Allowances, housing, medical all covered.
+DOCUMENTS: Class 12 certificate or appearing proof, age proof, Aadhaar, photograph, medical fitness.
+DEADLINE: Notification twice a year. April exam in June notification. September exam in December notification.
+APPLY AT: https://upsc.gov.in
+STATES: All India
+
+SCHEME: UPSC CDS Combined Defence Services Examination
+CATEGORY: Government Job / Defence
+ELIGIBILITY: Indian citizen. Age 19 to 25 years depending on wing. Graduate required. For IMA and OTA female candidates also eligible. Medical and physical fitness required.
+BENEFITS: Officer commission in Indian Military Academy, Naval Academy, Air Force Academy, Officers Training Academy. Starting salary Rs 56,100 per month as Lieutenant. Full military benefits.
+DOCUMENTS: Graduation certificate, age proof, Aadhaar, medical fitness certificate.
+DEADLINE: Notification twice a year in October and June.
+APPLY AT: https://upsc.gov.in
+STATES: All India
+
+SCHEME: Indian Army Agniveer Recruitment
+CATEGORY: Government Job / Defence
+ELIGIBILITY: Indian citizen aged 17.5 to 21 years. Class 10 for General Duty, Class 12 for Technical and Clerk. Physical and medical fitness required.
+BENEFITS: 4 year service with monthly salary Rs 30,000 to Rs 40,000 plus allowances. After 4 years 25 percent retained permanently. Seva Nidhi of Rs 11.71 lakh on exit.
+DOCUMENTS: Class 10 or 12 certificate, age proof, domicile certificate, Aadhaar, physical fitness.
+DEADLINE: Recruitment rallies announced on Army website throughout the year.
+APPLY AT: https://joinindianarmy.nic.in
+STATES: All India
+
+SCHEME: Indian Navy Agniveer Recruitment
+CATEGORY: Government Job / Defence
+ELIGIBILITY: Indian citizen aged 17.5 to 21 years. Class 12 with Physics, Chemistry, Maths for most posts. Medical and physical fitness required.
+BENEFITS: 4 year service with monthly package Rs 30,000 to Rs 40,000. Seva Nidhi of Rs 11.71 lakh after 4 years. 25 percent retained in Navy.
+DOCUMENTS: Class 12 certificate, age proof, Aadhaar, medical fitness.
+DEADLINE: Notification twice a year on Navy website.
+APPLY AT: https://joinindiannavy.gov.in
+STATES: All India
+
+SCHEME: Indian Air Force Agniveer Vayu Recruitment
+CATEGORY: Government Job / Defence
+ELIGIBILITY: Indian citizen aged 17.5 to 21 years. Class 12 with Physics, Maths for most trades. Medical and physical standards required.
+BENEFITS: 4 year service. Monthly salary Rs 30,000 to Rs 40,000 plus allowances. Seva Nidhi Rs 11.71 lakh after 4 years.
+DOCUMENTS: Class 12 certificate, age proof, Aadhaar, medical certificate.
+DEADLINE: STAR examination notification on Air Force website.
+APPLY AT: https://agnipathvayu.cdac.in
+STATES: All India
+
+SCHEME: NABARD Grade A Officer Recruitment
+CATEGORY: Government Job / Banking
+ELIGIBILITY: Graduate with 60 percent marks. Age 21 to 30 years. OBC 3 years relaxation, SC/ST 5 years. Masters or CA/CS/ICWA also eligible.
+BENEFITS: Officer posts in National Bank for Agriculture and Rural Development. Starting salary Rs 44,500 per month plus allowances. Rural service perks.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification usually in January. Phase 1 in February. Phase 2 in April.
+APPLY AT: https://nabard.org
+STATES: All India
+
+SCHEME: LIC AAO Assistant Administrative Officer
+CATEGORY: Government Job / Insurance
+ELIGIBILITY: Graduate with 60 percent marks. Age 21 to 30 years. Age relaxation for reserved categories. Computer knowledge preferred.
+BENEFITS: AAO posts in Life Insurance Corporation of India. Starting salary Rs 53,600 per month. Insurance perks and career growth.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification once a year usually in February.
+APPLY AT: https://licindia.in
+STATES: All India
+
+SCHEME: EPFO SSA Social Security Assistant
+CATEGORY: Government Job
+ELIGIBILITY: Graduate from recognized university. Age 18 to 27 years. OBC 3 years, SC/ST 5 years relaxation. Computer proficiency required.
+BENEFITS: Social Security Assistant posts in EPFO offices across India. Salary Rs 25,500 to Rs 81,100 per month. Government perks.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, computer proficiency proof.
+DEADLINE: Notification announced on EPFO website.
+APPLY AT: https://epfindia.gov.in
+STATES: All India
+
+SCHEME: DRDO Scientist B Recruitment
+CATEGORY: Government Job / Research
+ELIGIBILITY: BE/BTech or MSc with first class marks. Age limit 28 years. Relevant engineering or science discipline required. Age relaxation for OBC and SC/ST.
+BENEFITS: Scientist B posts in Defence Research and Development Organisation. Starting salary Rs 56,100 per month plus allowances. Research facilities and career growth.
+DOCUMENTS: Engineering degree or MSc certificate, age proof, category certificate, Aadhaar.
+DEADLINE: Notification through DRDO website and CEPTAM.
+APPLY AT: https://drdo.gov.in or https://ceptam.drdo.gov.in
+STATES: All India
+
+SCHEME: ISRO Scientist Engineer Recruitment
+CATEGORY: Government Job / Research
+ELIGIBILITY: BE/BTech with first class in relevant discipline. Also through ICRB centralized recruitment. Age limit 35 years. Through GATE score also possible for some posts.
+BENEFITS: Scientist/Engineer SC posts in ISRO. Starting salary Rs 56,100 per month. Outstanding research career opportunities. HRA, DA, and allowances additional.
+DOCUMENTS: Engineering degree, GATE scorecard, age proof, category certificate, Aadhaar.
+DEADLINE: Notification on ISRO website throughout the year.
+APPLY AT: https://isro.gov.in or https://icrb.gov.in
+STATES: All India
+
+SCHEME: SEBI Officer Grade A Recruitment
+CATEGORY: Government Job / Finance
+ELIGIBILITY: Graduate with 60 percent or Post Graduate or CA/CS/CFA/LLB. Age 22 to 30 years. Age relaxation for reserved categories.
+BENEFITS: Officer Grade A posts in Securities and Exchange Board of India. Starting salary Rs 44,500 per month plus allowances. Prestigious finance career.
+DOCUMENTS: Degree certificate, age proof, category certificate, professional qualification, Aadhaar.
+DEADLINE: Notification once a year usually in December.
+APPLY AT: https://sebi.gov.in
+STATES: All India
+
+SCHEME: NIACL AO Administrative Officer Insurance
+CATEGORY: Government Job / Insurance
+ELIGIBILITY: Graduate with 60 percent marks. Age 21 to 30 years. Age relaxation for reserved categories.
+BENEFITS: Administrative Officer posts in New India Assurance Company Limited. Starting salary Rs 50,925 per month plus allowances.
+DOCUMENTS: Graduation certificate, age proof, category certificate, Aadhaar, photograph.
+DEADLINE: Notification once or twice a year.
+APPLY AT: https://newindia.co.in
+STATES: All India
+
+SCHEME: HAL Hindustan Aeronautics Limited Apprentice and Engineer
+CATEGORY: Government Job / Manufacturing
+ELIGIBILITY: ITI for Apprentice posts. BE/BTech for Engineer posts. Age limit 28 years for engineers. First class required for engineer posts.
+BENEFITS: Apprentice stipend Rs 9,000 to Rs 12,000 per month. Engineer starting salary Rs 40,000 to Rs 1,40,000 per month. Government manufacturing sector perks.
+DOCUMENTS: ITI or engineering degree, age proof, category certificate, Aadhaar.
+DEADLINE: Notification on HAL website throughout the year.
+APPLY AT: https://hal-india.co.in
+STATES: Karnataka, Uttar Pradesh, Telangana, Odisha, Maharashtra, Uttarakhand, Madhya Pradesh
+
+SCHEME: BHEL Bharat Heavy Electricals Apprentice Engineer Trainee
+CATEGORY: Government Job / Manufacturing
+ELIGIBILITY: BE/BTech for Engineer Trainee. ITI for Apprentice. First class required. Age limit 27 years for engineers. Age relaxation for reserved categories.
+BENEFITS: Engineer Trainee salary Rs 40,050 to Rs 1,40,000 per month. Apprentice stipend as per Apprenticeship Act.
+DOCUMENTS: Engineering degree or ITI certificate, age proof, category certificate, Aadhaar.
+DEADLINE: Notification on BHEL website.
+APPLY AT: https://bhel.com
+STATES: Delhi, Telangana, Tamil Nadu, Madhya Pradesh, Jharkhand, Uttarakhand, Kerala, Punjab, Uttar Pradesh
+
+SCHEME: ONGC Oil and Natural Gas Corporation Recruitment
+CATEGORY: Government Job / Energy
+ELIGIBILITY: BE/BTech or BSc for various posts. Also ITI for apprentice posts. Age limit 30 years. First class required.
+BENEFITS: Various technical and non-technical posts. Starting salary Rs 40,000 to Rs 1,80,000 per month depending on grade. Oil sector perks and facilities.
+DOCUMENTS: Degree or ITI certificate, age proof, category certificate, Aadhaar.
+DEADLINE: Notification on ONGC website.
+APPLY AT: https://ongcindia.com
+STATES: All India - major centres in Gujarat, Maharashtra, Assam, Andhra Pradesh
+
+SCHEME: PMKVY Pradhan Mantri Kaushal Vikas Yojana
+CATEGORY: Skill Development / Job
+ELIGIBILITY: Indian nationals, school or college dropouts, unemployed youth. Age 15 to 45 years. No income limit. Priority to economically weaker sections.
+BENEFITS: Free skill training in 40 plus sectors. Rs 8,000 monetary reward on successful completion and assessment. Job placement assistance and recognition of prior learning.
+DOCUMENTS: Aadhaar card, bank account, photograph, educational qualification documents.
+DEADLINE: Ongoing enrollment throughout the year
+APPLY AT: https://pmkvyofficial.org or nearest PMKVY training center
+STATES: All India
+
+SCHEME: National Apprenticeship Training Scheme NATS
+CATEGORY: Skill Development / Job
+ELIGIBILITY: Diploma or degree holders in engineering, technology, or vocational courses. Age 16 to 35 years. Registered on NATS portal.
+BENEFITS: Stipend Rs 9,000 to Rs 14,000 per month during apprenticeship in PSUs and private companies. Practical work experience and certificate from BOAT/BOPT.
+DOCUMENTS: Degree or diploma certificate, Aadhaar, bank account, photograph.
+DEADLINE: Registration open throughout the year. Companies post apprenticeship vacancies.
+APPLY AT: https://nats.education.gov.in
+STATES: All India
+
+SCHEME: C-DAC PG Diploma in Advanced Computing PG-DAC
+CATEGORY: Skill Development / Job
+ELIGIBILITY: BE or BTech or MCA or MSc graduates. Admission through C-CAT entrance exam. Any engineering or computer science background eligible.
+BENEFITS: Industry-ready software training for 6 months. Excellent placement record with top IT companies. Course fee subsidized. Average placement package Rs 4 to 8 lakh per year.
+DOCUMENTS: Graduation certificate, C-CAT scorecard, Aadhaar, photograph.
+DEADLINE: February batch applications in November. September batch applications in June.
+APPLY AT: https://cdac.in
+STATES: Maharashtra, Karnataka, NCR Delhi, West Bengal, Tamil Nadu, Kerala, Telangana, Madhya Pradesh
+
+SCHEME: Stand Up India Scheme for SC ST and Women Entrepreneurs
+CATEGORY: Startup / Job Creation
+ELIGIBILITY: SC or ST borrowers and women entrepreneurs above 18 years. First time enterprise only. Must be setting up greenfield enterprise in manufacturing, services, or trading.
+BENEFITS: Bank loans between Rs 10 lakh and 1 crore for new businesses. Composite loan covering 75 percent of project cost. Handholding support from SIDBI and NABARD.
+DOCUMENTS: SC/ST or gender certificate, business plan, identity proof, address proof, Aadhaar, bank account.
+DEADLINE: Ongoing - apply anytime
+APPLY AT: https://standupmitra.in or any Scheduled Commercial Bank
+STATES: All India
