@@ -1,10 +1,12 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Bookmark, BookmarkCheck, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { LoadingState } from "@/components/dashboard/LoadingState";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useAuthStore } from "@/store/authStore";
 import { useSchemeStore } from "@/store/schemeStore";
+import { useSavedSchemeStore } from "@/store/savedSchemeStore";
 
 const PAGE_SIZE = 12;
 
@@ -12,16 +14,29 @@ const CATEGORY_OPTIONS = [
   "Agriculture",
   "Education",
   "Employment",
+  "Fellowship / Research",
+  "Government Job",
+  "Government Job / Banking",
+  "Government Job / Defence",
+  "Government Job / Energy",
+  "Government Job / Finance",
+  "Government Job / Insurance",
+  "Government Job / Manufacturing",
+  "Government Job / Railway",
+  "Government Job / Research",
   "Health",
   "Housing",
   "Minority Welfare",
   "Scholarship",
   "Social Welfare",
+  "Skill Development / Job",
+  "Startup / Job Creation",
   "Women and Child",
   "Youth"
 ];
 
 const STATE_OPTIONS = [
+  "All India",
   "Andhra Pradesh",
   "Arunachal Pradesh",
   "Assam",
@@ -38,11 +53,18 @@ const STATE_OPTIONS = [
   "Kerala",
   "Madhya Pradesh",
   "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "NCR Delhi",
   "Odisha",
   "Punjab",
   "Rajasthan",
+  "Sikkim",
   "Tamil Nadu",
   "Telangana",
+  "Tripura",
   "Uttar Pradesh",
   "Uttarakhand",
   "West Bengal"
@@ -58,6 +80,14 @@ export function SchemesPage() {
   const isLoading = useSchemeStore((state) => state.isLoading);
   const error = useSchemeStore((state) => state.error);
   const fetchSchemes = useSchemeStore((state) => state.fetchSchemes);
+  const accessToken = useAuthStore((state) => state.session?.access_token);
+  const savedSchemeIds = useSavedSchemeStore((state) => state.savedSchemeIds);
+  const savingIds = useSavedSchemeStore((state) => state.savingIds);
+  const savedError = useSavedSchemeStore((state) => state.error);
+  const fetchSavedSchemes = useSavedSchemeStore((state) => state.fetchSavedSchemes);
+  const saveScheme = useSavedSchemeStore((state) => state.saveScheme);
+  const unsaveScheme = useSavedSchemeStore((state) => state.unsaveScheme);
+  const resetSavedSchemes = useSavedSchemeStore((state) => state.resetSavedSchemes);
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -66,6 +96,10 @@ export function SchemesPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const emptyMessage =
+    search || category || state
+      ? "No schemes match the selected search, category, and state filters. Try clearing one filter or choosing All states and national schemes."
+      : "No schemes are available yet.";
 
   const activeFilters = useMemo(
     () => ({
@@ -81,6 +115,15 @@ export function SchemesPage() {
   useEffect(() => {
     void fetchSchemes(activeFilters);
   }, [activeFilters, fetchSchemes]);
+
+  useEffect(() => {
+    if (accessToken) {
+      void fetchSavedSchemes();
+      return;
+    }
+
+    resetSavedSchemes();
+  }, [accessToken, fetchSavedSchemes, resetSavedSchemes]);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -100,6 +143,15 @@ export function SchemesPage() {
 
   function goToPage(nextPage: number) {
     setCurrentPage(nextPage);
+  }
+
+  function toggleSaved(schemeId: string) {
+    if (savedSchemeIds.has(schemeId)) {
+      void unsaveScheme(schemeId);
+      return;
+    }
+
+    void saveScheme(schemeId);
   }
 
   return (
@@ -153,7 +205,7 @@ export function SchemesPage() {
               value={state}
               onChange={(event) => updateState(event.target.value)}
             >
-              <option value="">All India and states</option>
+              <option value="">All states and national schemes</option>
               {STATE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -165,40 +217,53 @@ export function SchemesPage() {
       </div>
 
       {error ? <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</div> : null}
+      {savedError ? <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{savedError}</div> : null}
 
       {isLoading ? <LoadingState rows={6} /> : null}
 
-      {!isLoading && !error && schemes.length === 0 ? <EmptyState message="No schemes match the current filters." /> : null}
+      {!isLoading && !error && schemes.length === 0 ? <EmptyState message={emptyMessage} /> : null}
 
       {!isLoading && schemes.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {schemes.map((scheme) => (
-            <Link
+            <article
               className="group flex min-h-64 flex-col rounded-md border bg-background p-4 transition hover:border-primary/60 hover:shadow-sm"
               key={scheme.id}
-              to={`/schemes/${scheme.id}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <span className="rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
                   {scheme.category}
                 </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                <div className="flex items-center gap-2">
+                  <button
+                    className="inline-flex h-8 items-center gap-1 rounded-md border px-2 text-xs font-medium text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                    type="button"
+                    onClick={() => toggleSaved(scheme.id)}
+                    disabled={!accessToken || savingIds.has(scheme.id)}
+                  >
+                    {savedSchemeIds.has(scheme.id) ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+                    {savedSchemeIds.has(scheme.id) ? "Saved" : "Save"}
+                  </button>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                </div>
               </div>
 
-              <h2 className="mt-4 line-clamp-2 text-base font-semibold">{scheme.title}</h2>
-              <p className="mt-2 line-clamp-4 text-sm text-muted-foreground">{scheme.description}</p>
+              <Link className="flex flex-1 flex-col" to={`/schemes/${scheme.id}`}>
+                <h2 className="mt-4 line-clamp-2 text-base font-semibold">{scheme.title}</h2>
+                <p className="mt-2 line-clamp-4 text-sm text-muted-foreground">{scheme.description}</p>
 
-              <dl className="mt-auto grid gap-2 pt-4 text-xs text-muted-foreground">
-                <div className="flex justify-between gap-3">
-                  <dt>State</dt>
-                  <dd className="truncate text-right font-medium text-foreground">{scheme.state || "All India"}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt>Ministry</dt>
-                  <dd className="truncate text-right font-medium text-foreground">{scheme.ministry || "Not specified"}</dd>
-                </div>
-              </dl>
-            </Link>
+                <dl className="mt-auto grid gap-2 pt-4 text-xs text-muted-foreground">
+                  <div className="flex justify-between gap-3">
+                    <dt>State</dt>
+                    <dd className="truncate text-right font-medium text-foreground">{scheme.state || "All India"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt>Ministry</dt>
+                    <dd className="truncate text-right font-medium text-foreground">{scheme.ministry || "Not specified"}</dd>
+                  </div>
+                </dl>
+              </Link>
+            </article>
           ))}
         </div>
       ) : null}

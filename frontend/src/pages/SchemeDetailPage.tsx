@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, ArrowLeft, CheckCircle2, ExternalLink, XCircle } from "lucide-react";
+import { AlertCircle, ArrowLeft, Bookmark, BookmarkCheck, CheckCircle2, ExternalLink, XCircle } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { LoadingState } from "@/components/dashboard/LoadingState";
@@ -7,6 +7,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useSchemeStore } from "@/store/schemeStore";
 import { apiClient } from "@/services/apiClient";
 import { useAuthStore } from "@/store/authStore";
+import { useSavedSchemeStore } from "@/store/savedSchemeStore";
 import type { EligibilityResponse } from "@/types";
 
 function formatScore(score: number) {
@@ -19,6 +20,13 @@ export function SchemeDetailPage() {
   const accessToken = useAuthStore(
     (state) => state.session?.access_token
   );
+  const savedSchemeIds = useSavedSchemeStore((state) => state.savedSchemeIds);
+  const savingIds = useSavedSchemeStore((state) => state.savingIds);
+  const savedError = useSavedSchemeStore((state) => state.error);
+  const fetchSavedSchemes = useSavedSchemeStore((state) => state.fetchSavedSchemes);
+  const saveScheme = useSavedSchemeStore((state) => state.saveScheme);
+  const unsaveScheme = useSavedSchemeStore((state) => state.unsaveScheme);
+  const resetSavedSchemes = useSavedSchemeStore((state) => state.resetSavedSchemes);
 
   const [eligibility, setEligibility] =
     useState<EligibilityResponse | null>(null);
@@ -62,6 +70,15 @@ export function SchemeDetailPage() {
     schemeId
   ]);
 
+  useEffect(() => {
+    if (accessToken) {
+      void fetchSavedSchemes();
+      return;
+    }
+
+    resetSavedSchemes();
+  }, [accessToken, fetchSavedSchemes, resetSavedSchemes]);
+
   async function checkEligibility() {
     if (!schemeId || !accessToken) {
       return;
@@ -82,6 +99,19 @@ export function SchemeDetailPage() {
     } finally {
       setIsCheckingEligibility(false);
     }
+  }
+
+  function toggleSaved() {
+    if (!schemeId) {
+      return;
+    }
+
+    if (savedSchemeIds.has(schemeId)) {
+      void unsaveScheme(schemeId);
+      return;
+    }
+
+    void saveScheme(schemeId);
   }
 
   if (isLoading) {
@@ -129,6 +159,16 @@ export function SchemeDetailPage() {
           </div>
 
           <div className="flex gap-3">
+            <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              onClick={toggleSaved}
+              disabled={!accessToken || savingIds.has(scheme.id)}
+            >
+              {savedSchemeIds.has(scheme.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              {savedSchemeIds.has(scheme.id) ? "Saved" : "Save"}
+            </button>
+
             <button
               className="h-10 rounded-md border px-4 text-sm font-medium"
               type="button"
@@ -197,6 +237,12 @@ export function SchemeDetailPage() {
           </div>
         </dl>
       </div>
+
+      {savedError ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+          {savedError}
+        </div>
+      ) : null}
 
       {eligibility ? (
         <div className="rounded-md border bg-background p-5">

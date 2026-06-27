@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Bot, ExternalLink, Loader2, Send, Sparkles, User } from "lucide-react";
+import { Bot, ExternalLink, Loader2, MessageSquare, Plus, Send, Sparkles, User } from "lucide-react";
 import { apiClient } from "@/services/apiClient";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,14 @@ type ChatMessage = {
   followUps?: string[];
 };
 
+type ChatSession = {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: ChatMessage[];
+};
+
 const SUGGESTED_QUESTIONS = [
   "Which schemes can help with college scholarships?",
   "What support is available for women entrepreneurs?",
@@ -39,26 +47,153 @@ const FOLLOW_UP_QUESTIONS = [
   "Opportunities for minority students"
 ];
 
+const CHAT_SESSIONS_STORAGE_KEY = "gov-schemes-chat-sessions";
+const ACTIVE_CHAT_STORAGE_KEY = "gov-schemes-active-chat-id";
+const LEGACY_CHAT_STORAGE_KEY = "gov-schemes-chat-messages";
+const EMPTY_MESSAGES: ChatMessage[] = [];
+
+function createEmptySession(): ChatSession {
+  const timestamp = new Date().toISOString();
+
+  return {
+    id: crypto.randomUUID(),
+    title: "New chat",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    messages: []
+  };
+}
+
+function getSessionTitle(messages: ChatMessage[]) {
+  const firstUserMessage = messages.find((message) => message.role === "user")?.content.trim();
+
+  if (!firstUserMessage) {
+    return "New chat";
+  }
+
+  return firstUserMessage.length > 48 ? `${firstUserMessage.slice(0, 45)}...` : firstUserMessage;
+}
+
+function formatSessionTimestamp(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function normalizeSession(session: ChatSession): ChatSession {
+  return {
+    ...session,
+    title: getSessionTitle(session.messages),
+    updatedAt: session.updatedAt || session.createdAt || new Date().toISOString(),
+    messages: Array.isArray(session.messages) ? session.messages : []
+  };
+}
+
+function loadStoredSessions(): ChatSession[] {
+  try {
+    const storedSessions = window.localStorage.getItem(CHAT_SESSIONS_STORAGE_KEY);
+    if (storedSessions) {
+      const parsed = JSON.parse(storedSessions);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((session) => normalizeSession(session));
+      }
+    }
+
+    const legacyMessages = window.localStorage.getItem(LEGACY_CHAT_STORAGE_KEY);
+    if (legacyMessages) {
+      const parsedMessages = JSON.parse(legacyMessages);
+      if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+        const timestamp = new Date().toISOString();
+
+        return [
+          {
+            id: crypto.randomUUID(),
+            title: getSessionTitle(parsedMessages),
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            messages: parsedMessages
+          }
+        ];
+      }
+    }
+  } catch {
+    return [createEmptySession()];
+  }
+
+  return [createEmptySession()];
+}
+
 export function ChatbotPage() {
   usePageTitle("Chat Assistant | Government Schemes Discovery");
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [sessions, setSessions] = useState<ChatSession[]>(loadStoredSessions);
+  const [activeSessionId, setActiveSessionId] = useState(() => window.localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY) || "");
   const [question, setQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const activeSession = sessions.find((session) => session.id === activeSessionId) || sessions[0];
+  const messages = activeSession?.messages ?? EMPTY_MESSAGES;
   const canSend = question.trim().length > 0 && !isLoading;
 
   const latestUserQuestion = useMemo(
     () => [...messages].reverse().find((message) => message.role === "user")?.content,
     [messages]
   );
+  const recentSessions = useMemo(
+    () =>
+      [...sessions].sort(
+        (firstSession, secondSession) =>
+          new Date(secondSession.updatedAt).getTime() - new Date(firstSession.updatedAt).getTime()
+      ),
+    [sessions]
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (!sessions.some((session) => session.id === activeSessionId) && sessions[0]) {
+      setActiveSessionId(sessions[0].id);
+    }
+  }, [activeSessionId, sessions]);
+
+  useEffect(() => {
+    window.localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+    window.localStorage.setItem(ACTIVE_CHAT_STORAGE_KEY, activeSessionId);
+    window.localStorage.removeItem(LEGACY_CHAT_STORAGE_KEY);
+  }, [activeSessionId, sessions]);
+
+  function updateSessionMessages(sessionId: string, updater: (currentMessages: ChatMessage[]) => ChatMessage[]) {
+    setSessions((currentSessions) =>
+      currentSessions.map((session) => {
+        if (session.id !== sessionId) {
+          return session;
+        }
+
+        const nextMessages = updater(session.messages);
+
+        return {
+          ...session,
+          title: getSessionTitle(nextMessages),
+          updatedAt: new Date().toISOString(),
+          messages: nextMessages
+        };
+      })
+    );
+  }
 
   async function askChatbot(nextQuestion: string) {
     const cleanedQuestion = nextQuestion.trim();
@@ -72,7 +207,12 @@ export function ChatbotPage() {
       content: cleanedQuestion
     };
 
-    setMessages((currentMessages) => [...currentMessages, userMessage]);
+    const targetSessionId = activeSession?.id;
+    if (!targetSessionId) {
+      return;
+    }
+
+    updateSessionMessages(targetSessionId, (currentMessages) => [...currentMessages, userMessage]);
     setQuestion("");
     setError(null);
     setIsLoading(true);
@@ -82,7 +222,7 @@ export function ChatbotPage() {
         question: cleanedQuestion
       });
 
-      setMessages((currentMessages) => [
+      updateSessionMessages(targetSessionId, (currentMessages) => [
         ...currentMessages,
         {
           id: crypto.randomUUID(),
@@ -95,7 +235,7 @@ export function ChatbotPage() {
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : "Unable to reach the chatbot.";
       setError(message);
-      setMessages((currentMessages) => [
+      updateSessionMessages(targetSessionId, (currentMessages) => [
         ...currentMessages,
         {
           id: crypto.randomUUID(),
@@ -119,21 +259,85 @@ export function ChatbotPage() {
     void askChatbot(suggestion);
   }
 
+  function startNewChat() {
+    const nextSession = createEmptySession();
+    setSessions((currentSessions) => [nextSession, ...currentSessions]);
+    setActiveSessionId(nextSession.id);
+    setQuestion("");
+    setError(null);
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  function switchSession(sessionId: string) {
+    setActiveSessionId(sessionId);
+    setQuestion("");
+    setError(null);
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5">
+    <div className="mx-auto flex max-w-6xl flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Chat Assistant</h1>
           <p className="text-sm text-muted-foreground">Get concise answers from the imported government schemes.</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs font-medium text-muted-foreground">
-          <Sparkles className="h-4 w-4 text-primary" />
-          {latestUserQuestion ? "Ready for follow-up" : "Scheme search ready"}
+        <div className="flex flex-wrap gap-2">
+          <div className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs font-medium text-muted-foreground">
+            <Sparkles className="h-4 w-4 text-primary" />
+            {latestUserQuestion ? "Ready for follow-up" : "Scheme search ready"}
+          </div>
+          <button
+            className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+            type="button"
+            onClick={startNewChat}
+          >
+            <Plus className="h-4 w-4" />
+            New Chat
+          </button>
         </div>
       </div>
 
-      <section className="rounded-md border bg-background">
-        <div className="flex h-[min(72vh,760px)] min-h-[560px] flex-col">
+      <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+        <aside className="rounded-md border bg-background p-3">
+          <div className="flex items-center justify-between gap-3 border-b pb-3">
+            <div>
+              <h2 className="text-sm font-semibold">Recent Chats</h2>
+              <p className="mt-1 text-xs text-muted-foreground">{sessions.length} saved session{sessions.length === 1 ? "" : "s"}</p>
+            </div>
+            <button
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border text-muted-foreground hover:text-foreground"
+              type="button"
+              onClick={startNewChat}
+              aria-label="Start new chat"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="mt-3 max-h-64 space-y-2 overflow-y-auto lg:max-h-[650px]">
+            {recentSessions.map((session) => (
+              <button
+                className={cn(
+                  "flex w-full items-start gap-3 rounded-md border p-3 text-left transition hover:border-primary/60",
+                  session.id === activeSession?.id ? "border-primary bg-primary/5" : "bg-background"
+                )}
+                key={session.id}
+                type="button"
+                onClick={() => switchSession(session.id)}
+              >
+                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">{session.title}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{formatSessionTimestamp(session.updatedAt)}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <section className="rounded-md border bg-background">
+          <div className="flex h-[min(72vh,760px)] min-h-[560px] flex-col">
           <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
             {messages.length === 0 ? (
               <div className="flex h-full min-h-72 items-center justify-center">
@@ -303,8 +507,9 @@ export function ChatbotPage() {
               </button>
             </form>
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

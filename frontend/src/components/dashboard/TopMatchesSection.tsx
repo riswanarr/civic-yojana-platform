@@ -12,10 +12,12 @@ function formatScore(score: number) {
 }
 
 function getRecommendationReasons(reason: string) {
-  return reason
+  const reasons = reason
     .split(/[.;\n]/)
     .map((item) => item.trim())
     .filter(Boolean);
+
+  return reasons.length ? reasons : ["Recommended based on your profile details."];
 }
 
 export function TopMatchesSection() {
