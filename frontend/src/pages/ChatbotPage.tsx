@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Bot, ExternalLink, Loader2, MessageSquare, Plus, Send, Sparkles, User } from "lucide-react";
+import { Bot, ExternalLink, Loader2, MessageSquare, Plus, Send, Sparkles, User, X } from "lucide-react";
 import { apiClient } from "@/services/apiClient";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 
 type ChatbotSource = {
   scheme_id?: string;
@@ -47,10 +48,11 @@ const FOLLOW_UP_QUESTIONS = [
   "Opportunities for minority students"
 ];
 
-const CHAT_SESSIONS_STORAGE_KEY = "gov-schemes-chat-sessions";
-const ACTIVE_CHAT_STORAGE_KEY = "gov-schemes-active-chat-id";
+const CHAT_SESSIONS_STORAGE_PREFIX = "chat-sessions";
+const ACTIVE_CHAT_STORAGE_PREFIX = "active-chat";
 const LEGACY_CHAT_STORAGE_KEY = "gov-schemes-chat-messages";
 const EMPTY_MESSAGES: ChatMessage[] = [];
+const MAX_CHAT_SESSIONS = 5;
 
 function createEmptySession(): ChatSession {
   const timestamp = new Date().toISOString();
@@ -98,13 +100,34 @@ function normalizeSession(session: ChatSession): ChatSession {
   };
 }
 
-function loadStoredSessions(): ChatSession[] {
+function limitSessions(sessions: ChatSession[]) {
+  return [...sessions]
+    .sort(
+      (firstSession, secondSession) =>
+        new Date(secondSession.updatedAt).getTime() - new Date(firstSession.updatedAt).getTime()
+    )
+    .slice(0, MAX_CHAT_SESSIONS);
+}
+
+function getChatSessionsStorageKey(userId: string) {
+  return `${CHAT_SESSIONS_STORAGE_PREFIX}-${userId}`;
+}
+
+function getActiveChatStorageKey(userId: string) {
+  return `${ACTIVE_CHAT_STORAGE_PREFIX}-${userId}`;
+}
+
+function loadStoredSessions(userId: string | undefined): ChatSession[] {
+  if (!userId) {
+    return [createEmptySession()];
+  }
+
   try {
-    const storedSessions = window.localStorage.getItem(CHAT_SESSIONS_STORAGE_KEY);
+    const storedSessions = window.localStorage.getItem(getChatSessionsStorageKey(userId));
     if (storedSessions) {
       const parsed = JSON.parse(storedSessions);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((session) => normalizeSession(session));
+        return limitSessions(parsed.map((session) => normalizeSession(session)));
       }
     }
 
@@ -135,8 +158,11 @@ function loadStoredSessions(): ChatSession[] {
 export function ChatbotPage() {
   usePageTitle("Chat Assistant | Government Schemes Discovery");
 
-  const [sessions, setSessions] = useState<ChatSession[]>(loadStoredSessions);
-  const [activeSessionId, setActiveSessionId] = useState(() => window.localStorage.getItem(ACTIVE_CHAT_STORAGE_KEY) || "");
+  const userId = useAuthStore((state) => state.user?.id);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => loadStoredSessions(userId));
+  const [activeSessionId, setActiveSessionId] = useState(() =>
+    userId ? window.localStorage.getItem(getActiveChatStorageKey(userId)) || "" : ""
+  );
   const [question, setQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,16 +191,28 @@ export function ChatbotPage() {
   }, [messages, isLoading]);
 
   useEffect(() => {
+    const nextSessions = loadStoredSessions(userId);
+    setSessions(nextSessions);
+    setActiveSessionId(userId ? window.localStorage.getItem(getActiveChatStorageKey(userId)) || nextSessions[0].id : nextSessions[0].id);
+    setQuestion("");
+    setError(null);
+  }, [userId]);
+
+  useEffect(() => {
     if (!sessions.some((session) => session.id === activeSessionId) && sessions[0]) {
       setActiveSessionId(sessions[0].id);
     }
   }, [activeSessionId, sessions]);
 
   useEffect(() => {
-    window.localStorage.setItem(CHAT_SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
-    window.localStorage.setItem(ACTIVE_CHAT_STORAGE_KEY, activeSessionId);
+    if (!userId) {
+      return;
+    }
+
+    window.localStorage.setItem(getChatSessionsStorageKey(userId), JSON.stringify(sessions));
+    window.localStorage.setItem(getActiveChatStorageKey(userId), activeSessionId);
     window.localStorage.removeItem(LEGACY_CHAT_STORAGE_KEY);
-  }, [activeSessionId, sessions]);
+  }, [activeSessionId, sessions, userId]);
 
   function updateSessionMessages(sessionId: string, updater: (currentMessages: ChatMessage[]) => ChatMessage[]) {
     setSessions((currentSessions) =>
@@ -261,7 +299,7 @@ export function ChatbotPage() {
 
   function startNewChat() {
     const nextSession = createEmptySession();
-    setSessions((currentSessions) => [nextSession, ...currentSessions]);
+    setSessions((currentSessions) => limitSessions([nextSession, ...currentSessions]));
     setActiveSessionId(nextSession.id);
     setQuestion("");
     setError(null);
@@ -270,6 +308,26 @@ export function ChatbotPage() {
 
   function switchSession(sessionId: string) {
     setActiveSessionId(sessionId);
+    setQuestion("");
+    setError(null);
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  function deleteSession(sessionId: string) {
+    const remainingSessions = limitSessions(sessions.filter((session) => session.id !== sessionId));
+
+    if (remainingSessions.length === 0) {
+      const nextSession = createEmptySession();
+      setSessions([nextSession]);
+      setActiveSessionId(nextSession.id);
+    } else {
+      setSessions(remainingSessions);
+
+      if (sessionId === activeSession?.id) {
+        setActiveSessionId(remainingSessions[0].id);
+      }
+    }
+
     setQuestion("");
     setError(null);
     window.setTimeout(() => inputRef.current?.focus(), 0);
@@ -317,21 +375,33 @@ export function ChatbotPage() {
 
           <div className="mt-3 max-h-64 space-y-2 overflow-y-auto lg:max-h-[650px]">
             {recentSessions.map((session) => (
-              <button
+              <div
                 className={cn(
-                  "flex w-full items-start gap-3 rounded-md border p-3 text-left transition hover:border-primary/60",
+                  "flex items-start gap-2 rounded-md border p-2 transition hover:border-primary/60",
                   session.id === activeSession?.id ? "border-primary bg-primary/5" : "bg-background"
                 )}
                 key={session.id}
-                type="button"
-                onClick={() => switchSession(session.id)}
               >
-                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium">{session.title}</span>
-                  <span className="mt-1 block text-xs text-muted-foreground">{formatSessionTimestamp(session.updatedAt)}</span>
-                </span>
-              </button>
+                <button
+                  className="flex min-w-0 flex-1 items-start gap-3 text-left"
+                  type="button"
+                  onClick={() => switchSession(session.id)}
+                >
+                  <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium">{session.title}</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">{formatSessionTimestamp(session.updatedAt)}</span>
+                  </span>
+                </button>
+                <button
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                  type="button"
+                  onClick={() => deleteSession(session.id)}
+                  aria-label={`Delete chat: ${session.title}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
             ))}
           </div>
         </aside>
