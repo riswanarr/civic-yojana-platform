@@ -4,30 +4,59 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --background: 42 58% 95%;
+    --foreground: 154 38% 13%;
+    --card: 42 68% 98%;
+    --card-foreground: 154 38% 13%;
+    --popover: 42 68% 98%;
+    --popover-foreground: 154 38% 13%;
+    --primary: 145 54% 22%;
+    --primary-foreground: 42 68% 98%;
+    --secondary: 35 95% 90%;
+    --secondary-foreground: 154 38% 13%;
+    --muted: 42 35% 89%;
+    --muted-foreground: 156 12% 37%;
+    --accent: 30 92% 55%;
+    --accent-foreground: 30 25% 12%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --border: 38 32% 80%;
+    --input: 38 32% 80%;
+    --ring: 145 54% 22%;
+    --radius: 0.75rem;
   }
 
   body {
-    @apply bg-background text-foreground;
+    font-family:
+      Inter,
+      "Noto Sans Devanagari",
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+    @apply bg-background text-foreground antialiased;
+    background:
+      radial-gradient(circle at 8% 8%, hsl(30 92% 55% / 0.12), transparent 26rem),
+      radial-gradient(circle at 92% 10%, hsl(210 72% 50% / 0.1), transparent 24rem),
+      linear-gradient(180deg, hsl(42 72% 96%), hsl(42 52% 92%));
   }
 }
 
+@layer utilities {
+  .brand-wordmark {
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  .mandala-soft {
+    background-image:
+      radial-gradient(circle, hsl(145 54% 22% / 0.1) 1px, transparent 1px),
+      radial-gradient(circle, hsl(30 92% 55% / 0.1) 1px, transparent 1px);
+    background-position:
+      0 0,
+      10px 10px;
+    background-size: 20px 20px;
+  }
+}

@@ -39,12 +39,16 @@ export function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-      <div className="space-y-6">
+    <main className="mandala-soft flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-md space-y-6 rounded-2xl border bg-card/90 p-6 shadow-xl">
         <div>
+          <p className="brand-wordmark mb-4 text-xl">
+            <span className="text-primary">civic-</span>
+            <span className="text-accent">योजना</span>
+          </p>
           <h1 className="text-2xl font-semibold">Login</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Access your government schemes dashboard.
+            Access your civic opportunity dashboard.
           </p>
         </div>
 
@@ -52,7 +56,7 @@ export function LoginPage() {
           <label className="block space-y-2 text-sm">
             <span>Email</span>
             <input
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-xl border bg-background/70 px-3 py-2 outline-none focus:border-primary"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -63,7 +67,7 @@ export function LoginPage() {
           <label className="block space-y-2 text-sm">
             <span>Password</span>
             <input
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-xl border bg-background/70 px-3 py-2 outline-none focus:border-primary"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -74,7 +78,7 @@ export function LoginPage() {
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
           <button
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            className="w-full rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
             type="submit"
             disabled={isLoading}
           >
@@ -92,4 +96,3 @@ export function LoginPage() {
     </main>
   );
 }
-
