@@ -1,21 +1,20 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Bot, ExternalLink, Loader2, MessageSquare, Plus, Send, Sparkles, User, X } from "lucide-react";
+import { BadgeCheck, Bot, ExternalLink, FileText, Loader2, MessageSquare, Plus, Send, Sparkles, User, X } from "lucide-react";
 import { apiClient } from "@/services/apiClient";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
 type ChatbotSource = {
+  type?: "scheme" | "web";
   scheme_id?: string;
   title?: string;
   category?: string;
   state?: string | null;
   application_link?: string | null;
-};
-
-type ChatbotResponse = {
-  answer: string;
-  sources: ChatbotSource[];
+  url?: string | null;
+  snippet?: string | null;
+  verified?: boolean;
 };
 
 type ChatMessage = {
@@ -24,6 +23,16 @@ type ChatMessage = {
   content: string;
   sources?: ChatbotSource[];
   followUps?: string[];
+  actionLinks?: ChatActionLink[];
+  usedProfile?: boolean;
+  usedWebSearch?: boolean;
+  createdAt?: string;
+};
+
+type ChatActionLink = {
+  label: string;
+  url: string;
+  is_official?: boolean;
 };
 
 type ChatSession = {
@@ -32,6 +41,45 @@ type ChatSession = {
   createdAt: string;
   updatedAt: string;
   messages: ChatMessage[];
+  messagesLoaded?: boolean;
+};
+
+type ApiChatSession = {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type ApiChatMessage = {
+  id: string;
+  role: "assistant" | "user";
+  content: string;
+  sources?: ChatbotSource[];
+  follow_ups?: string[];
+  action_links?: ChatActionLink[];
+  used_profile?: boolean;
+  used_web_search?: boolean;
+  created_at?: string;
+};
+
+type ChatSessionsResponse = {
+  sessions: ApiChatSession[];
+};
+
+type ChatSessionResponse = {
+  session: ApiChatSession;
+  messages: ApiChatMessage[];
+};
+
+type CreateChatSessionResponse = {
+  session: ApiChatSession;
+};
+
+type CreateChatMessageResponse = {
+  session: ApiChatSession;
+  user_message: ApiChatMessage;
+  assistant_message: ApiChatMessage;
 };
 
 const SUGGESTED_QUESTIONS = [
@@ -48,29 +96,13 @@ const FOLLOW_UP_QUESTIONS = [
   "Opportunities for minority students"
 ];
 
-const CHAT_SESSIONS_STORAGE_PREFIX = "chat-sessions";
-const ACTIVE_CHAT_STORAGE_PREFIX = "active-chat";
-const LEGACY_CHAT_STORAGE_KEY = "gov-schemes-chat-messages";
 const EMPTY_MESSAGES: ChatMessage[] = [];
-const MAX_CHAT_SESSIONS = 5;
 
-function createEmptySession(): ChatSession {
-  const timestamp = new Date().toISOString();
-
-  return {
-    id: crypto.randomUUID(),
-    title: "New chat",
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    messages: []
-  };
-}
-
-function getSessionTitle(messages: ChatMessage[]) {
+function getSessionTitle(messages: ChatMessage[], fallback = "New chat") {
   const firstUserMessage = messages.find((message) => message.role === "user")?.content.trim();
 
   if (!firstUserMessage) {
-    return "New chat";
+    return fallback;
   }
 
   return firstUserMessage.length > 48 ? `${firstUserMessage.slice(0, 45)}...` : firstUserMessage;
@@ -91,87 +123,197 @@ function formatSessionTimestamp(value: string) {
   }).format(date);
 }
 
-function normalizeSession(session: ChatSession): ChatSession {
+function mapApiSession(session: ApiChatSession, existingMessages: ChatMessage[] = [], messagesLoaded = false): ChatSession {
   return {
-    ...session,
-    title: getSessionTitle(session.messages),
-    updatedAt: session.updatedAt || session.createdAt || new Date().toISOString(),
-    messages: Array.isArray(session.messages) ? session.messages : []
+    id: session.id,
+    title: session.title || getSessionTitle(existingMessages),
+    createdAt: session.created_at,
+    updatedAt: session.updated_at || session.created_at,
+    messages: existingMessages,
+    messagesLoaded
   };
 }
 
-function limitSessions(sessions: ChatSession[]) {
-  return [...sessions]
-    .sort(
-      (firstSession, secondSession) =>
-        new Date(secondSession.updatedAt).getTime() - new Date(firstSession.updatedAt).getTime()
-    )
-    .slice(0, MAX_CHAT_SESSIONS);
+function mapApiMessage(message: ApiChatMessage): ChatMessage {
+  return {
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    sources: filterVisibleSources(message.sources || []),
+    followUps: message.follow_ups || [],
+    actionLinks: message.action_links || [],
+    usedProfile: message.used_profile,
+    usedWebSearch: message.used_web_search,
+    createdAt: message.created_at
+  };
 }
 
-function getChatSessionsStorageKey(userId: string) {
-  return `${CHAT_SESSIONS_STORAGE_PREFIX}-${userId}`;
+function sourceLink(source: ChatbotSource) {
+  return source.application_link || source.url || "";
 }
 
-function getActiveChatStorageKey(userId: string) {
-  return `${ACTIVE_CHAT_STORAGE_PREFIX}-${userId}`;
-}
-
-function loadStoredSessions(userId: string | undefined): ChatSession[] {
-  if (!userId) {
-    return [createEmptySession()];
+function normalizeUrl(url?: string | null) {
+  const rawUrl = (url || "").trim();
+  if (!rawUrl) {
+    return "";
   }
 
   try {
-    const storedSessions = window.localStorage.getItem(getChatSessionsStorageKey(userId));
-    if (storedSessions) {
-      const parsed = JSON.parse(storedSessions);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return limitSessions(parsed.map((session) => normalizeSession(session)));
-      }
-    }
+    const parsedUrl = new URL(rawUrl);
+    parsedUrl.protocol = parsedUrl.protocol.toLowerCase();
+    parsedUrl.hostname = parsedUrl.hostname.toLowerCase();
+    parsedUrl.hash = "";
+    parsedUrl.pathname = parsedUrl.pathname.replace(/\/+$/, "") || parsedUrl.pathname;
 
-    const legacyMessages = window.localStorage.getItem(LEGACY_CHAT_STORAGE_KEY);
-    if (legacyMessages) {
-      const parsedMessages = JSON.parse(legacyMessages);
-      if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
-        const timestamp = new Date().toISOString();
-
-        return [
-          {
-            id: crypto.randomUUID(),
-            title: getSessionTitle(parsedMessages),
-            createdAt: timestamp,
-            updatedAt: timestamp,
-            messages: parsedMessages
-          }
-        ];
+    const seenParams = new Set<string>();
+    const dedupedParams = new URLSearchParams();
+    parsedUrl.searchParams.forEach((value, key) => {
+      const paramKey = `${key}=${value}`;
+      if (seenParams.has(paramKey)) {
+        return;
       }
-    }
+
+      seenParams.add(paramKey);
+      dedupedParams.append(key, value);
+    });
+    parsedUrl.search = dedupedParams.toString();
+
+    return parsedUrl.toString().replace(/\/+$/, "").toLowerCase();
   } catch {
-    return [createEmptySession()];
+    return rawUrl.replace(/#.*$/, "").replace(/\/+$/, "").toLowerCase();
+  }
+}
+
+function isInternalSource(source: ChatbotSource) {
+  return source.verified === false || source.title === "Official source verification";
+}
+
+function filterVisibleSources(sources: ChatbotSource[], excludedUrls: Set<string> = new Set()) {
+  const seen = new Set<string>();
+  const visibleSources: ChatbotSource[] = [];
+
+  for (const source of sources) {
+    if (isInternalSource(source)) {
+      continue;
+    }
+
+    const urlKey = normalizeUrl(sourceLink(source));
+    if (urlKey && excludedUrls.has(urlKey)) {
+      continue;
+    }
+
+    const key = source.scheme_id || urlKey || source.title;
+    if (!key || seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    visibleSources.push(source);
   }
 
-  return [createEmptySession()];
+  return visibleSources.slice(0, 2);
+}
+
+function actionLinksForMessage(message: ChatMessage) {
+  const seenUrls = new Set<string>();
+  const dedupeLinks = (links: ChatActionLink[]) =>
+    links.filter((link) => {
+      const urlKey = normalizeUrl(link.url);
+      if (!urlKey || seenUrls.has(urlKey)) {
+        return false;
+      }
+
+      seenUrls.add(urlKey);
+      return true;
+    });
+
+  if (message.actionLinks?.length) {
+    return dedupeLinks(message.actionLinks).slice(0, 3);
+  }
+
+  return dedupeLinks(
+    filterVisibleSources(message.sources || [])
+    .map((source): ChatActionLink | null => {
+      const url = sourceLink(source);
+      if (!url) {
+        return null;
+      }
+
+      return {
+        label: source.type === "web" ? "Open Official Portal" : "Open Official Source",
+        url,
+        is_official: source.type === "web" || Boolean(source.application_link)
+      };
+    })
+    .filter((link): link is ChatActionLink => link !== null)
+  ).slice(0, 3);
+}
+
+function shouldShowSourceCardsForQuestion(question?: string) {
+  const normalizedQuestion = (question || "").toLowerCase();
+  if (!normalizedQuestion) {
+    return false;
+  }
+
+  const suppressedTerms = [
+    "renew",
+    "renewal",
+    "deadline",
+    "last date",
+    "application status",
+    "currently open",
+    "latest notification",
+    "notification",
+    "documents",
+    "required",
+    "how do i",
+    "how to",
+    "eligible",
+    "eligibility",
+    "who is eligible"
+  ];
+  if (suppressedTerms.some((term) => normalizedQuestion.includes(term))) {
+    return false;
+  }
+
+  return [
+    "what is",
+    "tell me about",
+    "recommend",
+    "schemes for",
+    "compare",
+    "government schemes"
+  ].some((term) => normalizedQuestion.includes(term));
+}
+
+function visibleCardsForMessage(message: ChatMessage, question?: string) {
+  if (!shouldShowSourceCardsForQuestion(question)) {
+    return [];
+  }
+
+  const actionUrls = new Set(actionLinksForMessage(message).map((link) => normalizeUrl(link.url)));
+  return filterVisibleSources(message.sources || [], actionUrls).slice(0, 2);
 }
 
 export function ChatbotPage() {
   usePageTitle("Chat Assistant | Government Schemes Discovery");
 
-  const userId = useAuthStore((state) => state.user?.id);
-  const [sessions, setSessions] = useState<ChatSession[]>(() => loadStoredSessions(userId));
-  const [activeSessionId, setActiveSessionId] = useState(() =>
-    userId ? window.localStorage.getItem(getActiveChatStorageKey(userId)) || "" : ""
-  );
+  const accessToken = useAuthStore((state) => state.session?.access_token);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState("");
   const [question, setQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSessionLoading, setIsSessionLoading] = useState(false);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sendInFlightRef = useRef(false);
+  const createSessionInFlightRef = useRef(false);
 
   const activeSession = sessions.find((session) => session.id === activeSessionId) || sessions[0];
   const messages = activeSession?.messages ?? EMPTY_MESSAGES;
-  const canSend = question.trim().length > 0 && !isLoading;
+  const canSend = Boolean(accessToken) && question.trim().length > 0 && !isLoading && !isSessionLoading;
 
   const latestUserQuestion = useMemo(
     () => [...messages].reverse().find((message) => message.role === "user")?.content,
@@ -191,28 +333,98 @@ export function ChatbotPage() {
   }, [messages, isLoading]);
 
   useEffect(() => {
-    const nextSessions = loadStoredSessions(userId);
-    setSessions(nextSessions);
-    setActiveSessionId(userId ? window.localStorage.getItem(getActiveChatStorageKey(userId)) || nextSessions[0].id : nextSessions[0].id);
-    setQuestion("");
-    setError(null);
-  }, [userId]);
+    let isMounted = true;
 
-  useEffect(() => {
-    if (!sessions.some((session) => session.id === activeSessionId) && sessions[0]) {
-      setActiveSessionId(sessions[0].id);
+    async function loadSessions() {
+      if (!accessToken) {
+        setSessions([]);
+        setActiveSessionId("");
+        setError("Please sign in again to use chat sessions.");
+        return;
+      }
+
+      setIsSessionLoading(true);
+      setError(null);
+
+      try {
+        const response = await apiClient.get<ChatSessionsResponse>("/chatbot/sessions", accessToken);
+        if (!isMounted) {
+          return;
+        }
+
+        const nextSessions = (response.sessions || []).map((session) => mapApiSession(session));
+        setSessions(nextSessions);
+        setActiveSessionId(nextSessions[0]?.id || "");
+      } catch (requestError) {
+        if (!isMounted) {
+          return;
+        }
+
+        setSessions([]);
+        setActiveSessionId("");
+        setError(requestError instanceof Error ? requestError.message : "Unable to load chat sessions.");
+      } finally {
+        if (isMounted) {
+          setIsSessionLoading(false);
+        }
+      }
     }
-  }, [activeSessionId, sessions]);
+
+    void loadSessions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken]);
 
   useEffect(() => {
-    if (!userId) {
+    if (!accessToken || !activeSessionId) {
       return;
     }
 
-    window.localStorage.setItem(getChatSessionsStorageKey(userId), JSON.stringify(sessions));
-    window.localStorage.setItem(getActiveChatStorageKey(userId), activeSessionId);
-    window.localStorage.removeItem(LEGACY_CHAT_STORAGE_KEY);
-  }, [activeSessionId, sessions, userId]);
+    const targetSession = sessions.find((session) => session.id === activeSessionId);
+    if (!targetSession || targetSession.messagesLoaded) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadSessionMessages() {
+      setIsSessionLoading(true);
+      setError(null);
+
+      try {
+        const response = await apiClient.get<ChatSessionResponse>(`/chatbot/sessions/${activeSessionId}`, accessToken);
+        if (!isMounted) {
+          return;
+        }
+
+        setSessions((currentSessions) =>
+          currentSessions.map((session) =>
+            session.id === activeSessionId
+              ? {
+                  ...mapApiSession(response.session, response.messages.map(mapApiMessage), true)
+                }
+              : session
+          )
+        );
+      } catch (requestError) {
+        if (isMounted) {
+          setError(requestError instanceof Error ? requestError.message : "Unable to load this chat.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsSessionLoading(false);
+        }
+      }
+    }
+
+    void loadSessionMessages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken, activeSessionId, sessions]);
 
   function updateSessionMessages(sessionId: string, updater: (currentMessages: ChatMessage[]) => ChatMessage[]) {
     setSessions((currentSessions) =>
@@ -227,62 +439,102 @@ export function ChatbotPage() {
           ...session,
           title: getSessionTitle(nextMessages),
           updatedAt: new Date().toISOString(),
-          messages: nextMessages
+          messages: nextMessages,
+          messagesLoaded: true
         };
       })
     );
   }
 
+  async function createBackendSession(title?: string) {
+    if (!accessToken) {
+      throw new Error("Please sign in again to start a chat.");
+    }
+
+    const response = await apiClient.post<CreateChatSessionResponse>(
+      "/chatbot/sessions",
+      title ? { title } : {},
+      accessToken
+    );
+    const nextSession = mapApiSession(response.session, [], true);
+    setSessions((currentSessions) => [nextSession, ...currentSessions]);
+    setActiveSessionId(nextSession.id);
+    return nextSession;
+  }
+
   async function askChatbot(nextQuestion: string) {
     const cleanedQuestion = nextQuestion.trim();
-    if (!cleanedQuestion || isLoading) {
+    if (!cleanedQuestion || isLoading || sendInFlightRef.current) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError("Please sign in again to send a chat message.");
       return;
     }
 
     const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: `pending-${crypto.randomUUID()}`,
       role: "user",
-      content: cleanedQuestion
+      content: cleanedQuestion,
+      createdAt: new Date().toISOString()
     };
 
-    const targetSessionId = activeSession?.id;
-    if (!targetSessionId) {
-      return;
-    }
-
-    updateSessionMessages(targetSessionId, (currentMessages) => [...currentMessages, userMessage]);
     setQuestion("");
     setError(null);
+    sendInFlightRef.current = true;
     setIsLoading(true);
 
     try {
-      const response = await apiClient.post<ChatbotResponse>("/chatbot", {
-        question: cleanedQuestion
-      });
+      const targetSession = activeSession || (await createBackendSession(cleanedQuestion));
+      const targetSessionId = targetSession.id;
+
+      updateSessionMessages(targetSessionId, (currentMessages) => [...currentMessages, userMessage]);
+
+      const response = await apiClient.post<CreateChatMessageResponse>(
+        `/chatbot/sessions/${targetSessionId}/messages`,
+        {
+          question: cleanedQuestion
+        },
+        accessToken
+      );
+
+      const assistantMessage = mapApiMessage(response.assistant_message);
+      const confirmedUserMessage = mapApiMessage(response.user_message);
 
       updateSessionMessages(targetSessionId, (currentMessages) => [
-        ...currentMessages,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: response.answer || "I could not find a clear answer for that question.",
-          sources: response.sources,
-          followUps: FOLLOW_UP_QUESTIONS
-        }
+        ...currentMessages.filter((message) => message.id !== userMessage.id),
+        confirmedUserMessage,
+        assistantMessage
       ]);
+      setSessions((currentSessions) =>
+        currentSessions.map((session) =>
+          session.id === targetSessionId
+            ? {
+                ...session,
+                title: response.session.title || getSessionTitle(session.messages, session.title),
+                createdAt: response.session.created_at,
+                updatedAt: response.session.updated_at
+              }
+            : session
+        )
+      );
     } catch (requestError) {
       const message = requestError instanceof Error ? requestError.message : "Unable to reach the chatbot.";
       setError(message);
-      updateSessionMessages(targetSessionId, (currentMessages) => [
-        ...currentMessages,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: "I could not answer that right now. Please try again in a moment.",
-          followUps: FOLLOW_UP_QUESTIONS
-        }
-      ]);
+      if (activeSession?.id) {
+        updateSessionMessages(activeSession.id, (currentMessages) => [
+          ...currentMessages,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: "I could not answer that right now. Please try again in a moment.",
+            followUps: FOLLOW_UP_QUESTIONS
+          }
+        ]);
+      }
     } finally {
+      sendInFlightRef.current = false;
       setIsLoading(false);
       window.setTimeout(() => inputRef.current?.focus(), 0);
     }
@@ -297,13 +549,25 @@ export function ChatbotPage() {
     void askChatbot(suggestion);
   }
 
-  function startNewChat() {
-    const nextSession = createEmptySession();
-    setSessions((currentSessions) => limitSessions([nextSession, ...currentSessions]));
-    setActiveSessionId(nextSession.id);
+  async function startNewChat() {
+    if (isCreatingSession || createSessionInFlightRef.current) {
+      return;
+    }
+
+    createSessionInFlightRef.current = true;
+    setIsCreatingSession(true);
     setQuestion("");
     setError(null);
-    window.setTimeout(() => inputRef.current?.focus(), 0);
+
+    try {
+      await createBackendSession();
+      window.setTimeout(() => inputRef.current?.focus(), 0);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to start a new chat.");
+    } finally {
+      createSessionInFlightRef.current = false;
+      setIsCreatingSession(false);
+    }
   }
 
   function switchSession(sessionId: string) {
@@ -313,24 +577,33 @@ export function ChatbotPage() {
     window.setTimeout(() => inputRef.current?.focus(), 0);
   }
 
-  function deleteSession(sessionId: string) {
-    const remainingSessions = limitSessions(sessions.filter((session) => session.id !== sessionId));
+  async function deleteSession(sessionId: string) {
+    if (!accessToken) {
+      setError("Please sign in again to delete a chat.");
+      return;
+    }
+
+    const previousSessions = sessions;
+    const remainingSessions = sessions.filter((session) => session.id !== sessionId);
+    setSessions(remainingSessions);
 
     if (remainingSessions.length === 0) {
-      const nextSession = createEmptySession();
-      setSessions([nextSession]);
-      setActiveSessionId(nextSession.id);
-    } else {
-      setSessions(remainingSessions);
-
-      if (sessionId === activeSession?.id) {
-        setActiveSessionId(remainingSessions[0].id);
-      }
+      setActiveSessionId("");
+    } else if (sessionId === activeSession?.id) {
+      setActiveSessionId(remainingSessions[0].id);
     }
 
     setQuestion("");
     setError(null);
-    window.setTimeout(() => inputRef.current?.focus(), 0);
+
+    try {
+      await apiClient.delete(`/chatbot/sessions/${sessionId}`, accessToken);
+      window.setTimeout(() => inputRef.current?.focus(), 0);
+    } catch (requestError) {
+      setSessions(previousSessions);
+      setActiveSessionId(activeSession?.id || previousSessions[0]?.id || "");
+      setError(requestError instanceof Error ? requestError.message : "Unable to delete this chat.");
+    }
   }
 
   return (
@@ -348,9 +621,10 @@ export function ChatbotPage() {
           <button
             className="inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
             type="button"
-            onClick={startNewChat}
+            onClick={() => void startNewChat()}
+            disabled={!accessToken || isCreatingSession}
           >
-            <Plus className="h-4 w-4" />
+            {isCreatingSession ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             New Chat
           </button>
         </div>
@@ -361,19 +635,29 @@ export function ChatbotPage() {
           <div className="flex items-center justify-between gap-3 border-b pb-3">
             <div>
               <h2 className="text-sm font-semibold">Recent Chats</h2>
-              <p className="mt-1 text-xs text-muted-foreground">{sessions.length} saved session{sessions.length === 1 ? "" : "s"}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {isSessionLoading && sessions.length === 0
+                  ? "Loading chats..."
+                  : `${sessions.length} saved session${sessions.length === 1 ? "" : "s"}`}
+              </p>
             </div>
             <button
               className="inline-flex h-8 w-8 items-center justify-center rounded-md border text-muted-foreground hover:text-foreground"
               type="button"
-              onClick={startNewChat}
+              onClick={() => void startNewChat()}
               aria-label="Start new chat"
+              disabled={!accessToken || isCreatingSession}
             >
-              <Plus className="h-4 w-4" />
+              {isCreatingSession ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             </button>
           </div>
 
           <div className="mt-3 max-h-64 space-y-2 overflow-y-auto lg:max-h-[650px]">
+            {!isSessionLoading && recentSessions.length === 0 ? (
+              <p className="rounded-md border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
+                Start a new chat to save it here.
+              </p>
+            ) : null}
             {recentSessions.map((session) => (
               <div
                 className={cn(
@@ -396,7 +680,7 @@ export function ChatbotPage() {
                 <button
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
                   type="button"
-                  onClick={() => deleteSession(session.id)}
+                  onClick={() => void deleteSession(session.id)}
                   aria-label={`Delete chat: ${session.title}`}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -409,7 +693,16 @@ export function ChatbotPage() {
         <section className="rounded-md border bg-background">
           <div className="flex h-[min(72vh,760px)] min-h-[560px] flex-col">
           <div className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
-            {messages.length === 0 ? (
+            {isSessionLoading && messages.length === 0 ? (
+              <div className="flex h-full min-h-72 items-center justify-center">
+                <div className="inline-flex items-center gap-2 rounded-md border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading chat...
+                </div>
+              </div>
+            ) : null}
+
+            {!isSessionLoading && messages.length === 0 ? (
               <div className="flex h-full min-h-72 items-center justify-center">
                 <div className="max-w-md rounded-md border bg-muted/30 p-6 text-center">
                   <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -422,9 +715,14 @@ export function ChatbotPage() {
               </div>
             ) : null}
 
-            {messages.map((message) => {
+            {messages.map((message, index) => {
               const isUser = message.role === "user";
               const Icon = isUser ? User : Bot;
+              const questionForAssistant = isUser
+                ? undefined
+                : [...messages.slice(0, index)].reverse().find((previousMessage) => previousMessage.role === "user")?.content;
+              const actionLinks = isUser ? [] : actionLinksForMessage(message);
+              const sourceCards = isUser ? [] : visibleCardsForMessage(message, questionForAssistant);
 
               return (
                 <div className={cn("flex gap-3", isUser && "justify-end")} key={message.id}>
@@ -437,7 +735,7 @@ export function ChatbotPage() {
                   <div className={cn("min-w-0 space-y-3", isUser ? "max-w-[82%] sm:max-w-[70%]" : "max-w-[88%] sm:max-w-[76%]")}>
                     <div
                       className={cn(
-                        "rounded-md px-4 py-3 text-sm leading-6 shadow-sm",
+                        "whitespace-pre-line rounded-md px-4 py-3 text-sm leading-6 shadow-sm",
                         isUser
                           ? "bg-primary text-primary-foreground"
                           : "border bg-muted/40 text-foreground"
@@ -446,49 +744,19 @@ export function ChatbotPage() {
                       {message.content}
                     </div>
 
-                    {!isUser && message.sources?.length ? (
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {message.sources.map((source, index) => (
-                          <article
-                            className="rounded-md border bg-background p-3 shadow-sm"
-                            key={`${source.scheme_id || source.title || "source"}-${index}`}
+                    {!isUser && actionLinks.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {actionLinks.map((link) => (
+                          <a
+                            className="inline-flex h-8 items-center gap-2 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90"
+                            href={link.url}
+                            key={`${link.label}-${link.url}`}
+                            rel="noreferrer"
+                            target="_blank"
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <span className="rounded-md bg-muted px-2 py-1 text-[11px] font-medium text-muted-foreground">
-                                Source {index + 1}
-                              </span>
-                              {source.application_link ? (
-                                <a
-                                  className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md bg-primary px-2 text-xs font-medium text-primary-foreground"
-                                  href={source.application_link}
-                                  rel="noreferrer"
-                                  target="_blank"
-                                >
-                                  Apply
-                                  <ExternalLink className="h-3 w-3" />
-                                </a>
-                              ) : null}
-                            </div>
-
-                            <h3 className="mt-3 line-clamp-2 text-sm font-semibold">
-                              {source.title || "Untitled scheme"}
-                            </h3>
-
-                            <dl className="mt-3 grid gap-2 text-xs text-muted-foreground">
-                              <div className="flex justify-between gap-3">
-                                <dt>Category</dt>
-                                <dd className="truncate text-right font-medium text-foreground">
-                                  {source.category || "Not specified"}
-                                </dd>
-                              </div>
-                              <div className="flex justify-between gap-3">
-                                <dt>State</dt>
-                                <dd className="truncate text-right font-medium text-foreground">
-                                  {source.state || "All India"}
-                                </dd>
-                              </div>
-                            </dl>
-                          </article>
+                            {link.is_official ? <BadgeCheck className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                            {link.label}
+                          </a>
                         ))}
                       </div>
                     ) : null}
@@ -506,6 +774,64 @@ export function ChatbotPage() {
                             {followUp}
                           </button>
                         ))}
+                      </div>
+                    ) : null}
+
+                    {!isUser && sourceCards.length ? (
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {sourceCards.map((source, index) => (
+                          <article
+                            className="rounded-md border bg-background p-3 shadow-sm"
+                            key={`${source.scheme_id || source.url || source.title || "source"}-${index}`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex min-w-0 items-center gap-2">
+                                <FileText className="h-4 w-4 shrink-0 text-primary" />
+                                {source.type === "web" && source.verified ? (
+                                  <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-primary/30 bg-primary/5 px-2 py-1 text-[11px] font-medium text-primary">
+                                    <BadgeCheck className="h-3 w-3" />
+                                    Verified
+                                  </span>
+                                ) : null}
+                              </div>
+                              {sourceLink(source) ? (
+                                <a
+                                  className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md bg-primary px-2 text-xs font-medium text-primary-foreground"
+                                  href={sourceLink(source)}
+                                  rel="noreferrer"
+                                  target="_blank"
+                                >
+                                  Open Official Source
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              ) : null}
+                            </div>
+
+                            <h3 className="mt-3 line-clamp-2 text-sm font-semibold">
+                              {source.title || "Untitled scheme"}
+                            </h3>
+
+                            <p className="mt-2 text-xs font-medium text-muted-foreground">
+                              {source.type === "web" ? "Official web" : source.category || "Not specified"} /{" "}
+                              {source.type === "web" ? "Official source" : source.state || "All India"}
+                            </p>
+                          </article>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {!isUser && (message.usedProfile || message.usedWebSearch) ? (
+                      <div className="flex flex-wrap gap-2">
+                        {message.usedProfile ? (
+                          <span className="rounded-md border bg-background px-2 py-1 text-[11px] font-medium text-muted-foreground">
+                            Profile-aware
+                          </span>
+                        ) : null}
+                        {message.usedWebSearch ? (
+                          <span className="rounded-md border bg-background px-2 py-1 text-[11px] font-medium text-muted-foreground">
+                            Official web checked
+                          </span>
+                        ) : null}
                       </div>
                     ) : null}
                   </div>
@@ -565,7 +891,7 @@ export function ChatbotPage() {
                 placeholder="Ask about eligibility, benefits, deadlines, or how to apply..."
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || isSessionLoading || !accessToken}
               />
               <button
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
@@ -583,3 +909,4 @@ export function ChatbotPage() {
     </div>
   );
 }
+

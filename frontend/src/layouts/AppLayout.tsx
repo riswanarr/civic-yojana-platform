@@ -42,6 +42,7 @@ function formatNotificationTime(value: string) {
 export function AppLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.session?.access_token);
   const logout = useAuthStore((state) => state.logout);
@@ -146,7 +147,15 @@ export function AppLayout() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
-              <details className="relative">
+              <details
+                className="relative"
+                open={notificationsOpen}
+                onToggle={(event) =>
+                  setNotificationsOpen(
+                    (event.currentTarget as HTMLDetailsElement).open
+                  )
+                }
+              >
                 <summary className="relative flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border bg-card text-muted-foreground shadow-sm transition hover:border-accent/60 hover:text-foreground">
                   <Bell className="h-4 w-4" />
                   {unreadCount > 0 ? (
@@ -182,7 +191,15 @@ export function AppLayout() {
                           )}
                           key={notification.id}
                           type="button"
-                          onClick={() => void markAsRead(notification.id)}
+                          onClick={async () => {
+                            await markAsRead(notification.id);
+
+                            setNotificationsOpen(false);
+
+                            if (notification.scheme_id) {
+                              navigate(`/schemes/${notification.scheme_id}`);
+                            }
+                          }}
                         >
                           <span className="flex items-start justify-between gap-3">
                             <span className="font-medium">{notification.title}</span>

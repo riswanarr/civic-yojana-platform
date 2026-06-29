@@ -13,6 +13,7 @@ from app.services.parsers import (
     PMInternshipParser,
     StartupIndiaParser,
 )
+from app.services.notification_service import notification_service
 
 
 logger = logging.getLogger(__name__)
@@ -89,7 +90,14 @@ class UpdateService:
             return []
 
         logger.info("Fetching source %s with parser %s.", source.get("name"), parser_name)
-        return parser.fetch(source)
+        try:
+            return parser.fetch(source)
+        except OSError:
+            logger.exception("Source fetch failed because of an operating-system resource error.")
+            return []
+        except Exception:
+            logger.exception("Source fetch failed.")
+            return []
 
     def normalize_data(self, raw_items: list[dict[str, Any]]) -> list[dict[str, Any]]:
         normalized_items = []
@@ -173,8 +181,10 @@ class UpdateService:
         if not notification_rows:
             return 0
 
-        response = self.client.table("notifications").insert(notification_rows).execute()
-        return len(response.data or notification_rows)
+        return notification_service.insert_idempotent_notifications(
+            notification_rows,
+            client=self.client,
+        )
 
     def _mark_source_checked(self, source: dict[str, Any]) -> None:
         source_id = source.get("id")

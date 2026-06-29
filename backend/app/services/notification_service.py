@@ -1,4 +1,5 @@
 from typing import Any
+import logging
 
 from fastapi import HTTPException, status
 from supabase import create_client
@@ -7,6 +8,7 @@ from app.config import settings
 
 
 NOTIFICATION_FIELDS = "id,user_id,title,message,is_read,created_at,scheme_id"
+logger = logging.getLogger(__name__)
 
 
 class NotificationService:
@@ -32,14 +34,118 @@ class NotificationService:
         user_id = self._get_authenticated_user_id(access_token)
         notifications = self._fetch_notifications(user_id)
 
-        if not notifications:
-            self._seed_demo_notifications(user_id)
-            notifications = self._fetch_notifications(user_id)
-
         return {
             "items": notifications,
             "unread_count": sum(1 for item in notifications if not item.get("is_read")),
         }
+
+    def create_from_recommendations(
+        self,
+        user_id: str,
+        recommendations: list[dict[str, Any]],
+    ) -> int:
+        eligible_recommendations = []
+        seen_keys = set()
+        for recommendation in recommendations:
+            if not self._should_notify(recommendation):
+                continue
+
+            equivalent_key = recommendation.get("equivalent_key") or recommendation.get("scheme_id")
+            if equivalent_key in seen_keys:
+                continue
+
+            seen_keys.add(equivalent_key)
+            eligible_recommendations.append(recommendation)
+
+        if not eligible_recommendations:
+            return 0
+
+        rows = [
+            {
+                "user_id": user_id,
+                "scheme_id": recommendation["scheme_id"],
+                "title": "Strong scheme match available",
+                "message": f"{recommendation['title']} matches your profile with a {recommendation['score']}% score.",
+                "is_read": False,
+            }
+            for recommendation in eligible_recommendations
+        ]
+
+        return self.insert_idempotent_notifications(rows)
+
+    def insert_idempotent_notifications(
+        self,
+        rows: list[dict[str, Any]],
+        *,
+        client: Any | None = None,
+    ) -> int:
+        if not rows:
+            return 0
+
+        db = client or self.client
+        rows_to_insert = []
+        seen_keys = set()
+
+        for row in rows:
+            user_id = row.get("user_id")
+            scheme_id = row.get("scheme_id")
+            title = row.get("title")
+
+            if not user_id or not scheme_id or not title:
+                continue
+
+            key = (user_id, scheme_id, title)
+            if key in seen_keys:
+                continue
+
+            seen_keys.add(key)
+
+            try:
+                existing_response = (
+                    db.table("notifications")
+                    .select("id")
+                    .eq("user_id", user_id)
+                    .eq("scheme_id", scheme_id)
+                    .eq("title", title)
+                    .limit(1)
+                    .execute()
+                )
+            except Exception:
+                logger.exception("Unable to check existing notification.")
+                continue
+
+            if existing_response.data:
+                continue
+
+            rows_to_insert.append(row)
+
+        if not rows_to_insert:
+            return 0
+
+        try:
+            response = db.table("notifications").insert(rows_to_insert).execute()
+            return len(response.data or rows_to_insert)
+        except Exception:
+            logger.exception("Unable to create notifications.")
+            return 0
+
+    def _should_notify(self, recommendation: dict[str, Any]) -> bool:
+        try:
+            score = int(recommendation.get("score", 0))
+        except (TypeError, ValueError):
+            score = 0
+
+        reason = str(recommendation.get("reason") or "").lower()
+
+        return (
+            bool(recommendation.get("scheme_id"))
+            and bool(recommendation.get("scheme_type"))
+            and score >= 70
+            and recommendation.get("hard_restrictions_passed", True)
+            and not recommendation.get("additional_verification_required", False)
+            and "uncertain" not in reason
+            and "low match" not in reason
+        )
 
     def mark_as_read(self, access_token: str, notification_id: str) -> dict[str, Any]:
         user_id = self._get_authenticated_user_id(access_token)

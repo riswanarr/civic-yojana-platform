@@ -14,6 +14,96 @@ function formatScore(score: number) {
   return score > 1 ? Math.round(score) : Math.round(score * 100);
 }
 
+function isGenericPortalUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    const path = parsed.pathname.replace(/\/+$/, "").toLowerCase();
+
+    return (
+      !path ||
+      path === "/home" ||
+      path === "/index" ||
+      path === "/index.html" ||
+      [
+        "scholarships.gov.in",
+        "aicte-india.org",
+        "aicte.gov.in",
+        "ugc.ac.in",
+        "ncs.gov.in",
+      ].includes(host) && (!path || path === "/")
+    );
+  } catch {
+    return true;
+  }
+}
+
+function isValidUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isEmptyApplyLink(url: string) {
+  const normalized = url.trim().toLowerCase();
+  return !normalized || normalized === "#" || normalized === "javascript:void(0)";
+}
+
+function resolveApplyLink(scheme: {
+  application_link: string | null;
+  official_source: string | null;
+  ministry: string | null;
+  category: string;
+  title: string;
+}) {
+  const applicationLink = scheme.application_link?.trim();
+  const officialSource = scheme.official_source?.trim();
+
+  if (
+    applicationLink &&
+    !isEmptyApplyLink(applicationLink) &&
+    isValidUrl(applicationLink) &&
+    !isGenericPortalUrl(applicationLink)
+  ) {
+    return { url: applicationLink, isGenericPortal: false };
+  }
+
+  if (officialSource && isValidUrl(officialSource)) {
+    return {
+      url: officialSource,
+      isGenericPortal: isGenericPortalUrl(officialSource),
+    };
+  }
+
+  const text = [
+    scheme.title,
+    scheme.ministry,
+    officialSource,
+    applicationLink,
+  ].join(" ").toLowerCase();
+
+  if (text.includes("aicte")) {
+    return { url: "https://www.aicte-india.org/", isGenericPortal: true };
+  }
+  if (text.includes("ugc")) {
+    return { url: "https://www.ugc.ac.in/", isGenericPortal: true };
+  }
+  if (text.includes("national career service") || text.includes("ncs")) {
+    return { url: "https://www.ncs.gov.in/", isGenericPortal: true };
+  }
+  if (text.includes("nsp") || text.includes("scholarships.gov.in")) {
+    return { url: "https://scholarships.gov.in/", isGenericPortal: true };
+  }
+
+  return {
+    url: "",
+    isGenericPortal: false,
+  };
+}
+
 export function SchemeDetailPage() {
   const { schemeId } = useParams();
 
@@ -132,6 +222,9 @@ export function SchemeDetailPage() {
     );
   }
 
+  const applyLink = resolveApplyLink(scheme);
+  const schemeSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(scheme.title)}`;
+
   return (
     <div className="space-y-6">
       <Link
@@ -180,17 +273,34 @@ export function SchemeDetailPage() {
                 : "Check Eligibility"}
             </button>
 
-            {scheme.application_link ? (
+            <div className="max-w-xs space-y-2">
+              {applyLink.url ? (
+                <a
+                  className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+                  href={applyLink.url}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Apply
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              ) : null}
+
+              {applyLink.url ? (
+                <p className="text-xs leading-5 text-muted-foreground">
+                  This link opens an external government portal. If the page is unavailable or redirected, search for the scheme name on the official website.
+                </p>
+              ) : null}
+
               <a
-                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
-                href={scheme.application_link}
+                className="inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+                href={schemeSearchUrl}
                 rel="noreferrer"
                 target="_blank"
               >
-                Apply
-                <ExternalLink className="h-4 w-4" />
+                Search Scheme
               </a>
-            ) : null}
+            </div>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from typing import Any
 
@@ -6,6 +7,8 @@ from fastapi import HTTPException, status
 from supabase import create_client
 
 from app.config import settings
+from app.services.eligibility_service import eligibility_service
+from app.services.notification_service import notification_service
 
 
 PROFILE_FIELDS = [
@@ -28,6 +31,21 @@ SCHEME_FIELDS = [
     "eligibility_criteria",
     "benefits",
     "state",
+    "deadline",
+]
+
+
+logger = logging.getLogger(__name__)
+
+EXPLANATION_CRITERIA = [
+    "state matches",
+    "available across india",
+    "occupation matches",
+    "education matches",
+    "gender requirement matches",
+    "category matches",
+    "disability status matches",
+    "minority status matches",
 ]
 
 
@@ -67,10 +85,14 @@ class RecommendationService:
         if not schemes:
             return {"recommendations": []}
 
-        recommendations = self._rank_with_gemini(
+        recommendations = self._generate_fallback_recommendations(
             profile,
             schemes,
         )
+        try:
+            notification_service.create_from_recommendations(user_id, recommendations)
+        except Exception:
+            logger.exception("Unable to create recommendation notifications.")
 
         return {"recommendations": recommendations[:5]}
 
@@ -175,120 +197,164 @@ class RecommendationService:
         schemes: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
         recommendations = []
+        seen_keys = set()
 
         for scheme in schemes:
-            score = 50
-            reasons = []
+            try:
+                eligibility = eligibility_service._generate_eligibility(profile, scheme)
+            except Exception:
+                logger.exception("Unable to score scheme for recommendations.")
+                continue
 
-            title = (
-                scheme.get("title", "")
-                or ""
-            ).lower()
+            scheme_type = eligibility.get("scheme_type", "Grant")
+            relevance = self._scheme_type_relevance(profile, scheme_type)
+            score = min(97, max(0, eligibility["eligibility_score"] + relevance))
+            scheme_id = str(scheme.get("id") or "").strip()
+            title = eligibility.get("scheme_title") or scheme.get("title") or "Untitled Scheme"
+            equivalent_key = self._equivalent_key(title, scheme_type)
 
-            description = (
-                scheme.get("description", "")
-                or ""
-            ).lower()
+            if not scheme_id or score < 50 or relevance <= -20 or not eligibility.get("hard_restrictions_passed", True):
+                continue
 
-            eligibility = (
-                scheme.get("eligibility_criteria", "")
-                or ""
-            ).lower()
+            if eligibility.get("additional_verification_required"):
+                score = min(score, 69)
 
-            text = (
-                f"{title} "
-                f"{description} "
-                f"{eligibility}"
+            if equivalent_key in seen_keys:
+                continue
+
+            reasons = self._filter_explanation_reasons(eligibility["matched_criteria"])[:4]
+            if not reasons:
+                continue
+
+            reason = self._build_recommendation_reason(
+                reasons,
+                scheme_type,
+                eligibility.get("missing_requirements", []),
             )
-
-            if (
-                str(
-                    profile.get(
-                        "occupation",
-                        "",
-                    )
-                ).lower()
-                == "student"
-            ):
-                if any(
-                    word in text
-                    for word in [
-                        "student",
-                        "scholarship",
-                        "education",
-                        "internship",
-                    ]
-                ):
-                    score += 25
-                    reasons.append(
-                        "matches your student profile"
-                    )
-
-            if (
-                str(
-                    profile.get(
-                        "state",
-                        "",
-                    )
-                ).lower()
-                == "kerala"
-                and "kerala" in text
-            ):
-                score += 20
-                reasons.append(
-                    "is available in Kerala"
-                )
-
-            if (
-                str(
-                    profile.get(
-                        "gender",
-                        "",
-                    )
-                ).lower()
-                == "female"
-            ):
-                if any(
-                    word in text
-                    for word in [
-                        "girl",
-                        "female",
-                        "women",
-                    ]
-                ):
-                    score += 15
-                    reasons.append(
-                        "supports female beneficiaries"
-                    )
-
-            score = min(score, 100)
-
-            if reasons:
-                reason = (
-                    "Recommended because it "
-                    + ", ".join(reasons)
-                    + "."
-                )
-            else:
-                reason = (
-                    "Recommended based on your profile."
-                )
+            seen_keys.add(equivalent_key)
 
             recommendations.append(
                 {
-                    "scheme_id": scheme["id"],
-                    "title": scheme["title"],
+                    "scheme_id": scheme_id,
+                    "title": title,
                     "score": score,
                     "reason": reason,
+                    "scheme_type": scheme_type,
+                    "deadline": eligibility["deadline"],
+                    "hard_restrictions_passed": eligibility.get("hard_restrictions_passed", True),
+                    "additional_verification_required": eligibility.get("additional_verification_required", False),
+                    "equivalent_key": equivalent_key,
                 }
             )
 
         recommendations.sort(
-            key=lambda item: item["score"],
+            key=lambda item: (item["score"], self._type_rank(profile, item["scheme_type"])),
             reverse=True,
         )
 
         return recommendations[:5]
+
+    def _scheme_type_relevance(
+        self,
+        profile: dict[str, Any],
+        scheme_type: str,
+    ) -> int:
+        occupation = eligibility_service._normalize_occupation(profile.get("occupation"))
+
+        if occupation == "student":
+            return {
+                "Scholarship": 10,
+                "Internship": 9,
+                "Grant": 5,
+                "Training": 3,
+                "Fellowship": 0,
+                "Entrepreneurship": -8,
+                "Job": -25,
+                "Portal": -30,
+                "Service": -30,
+                "Resource": -30,
+            }.get(scheme_type, 0)
+
+        if occupation == "job_seeker":
+            return {
+                "Job": 16,
+                "Training": 15,
+                "Internship": 12,
+                "Fellowship": 0,
+                "Entrepreneurship": -2,
+                "Grant": -6,
+                "Scholarship": -25,
+                "Portal": -30,
+                "Service": -30,
+                "Resource": -30,
+            }.get(scheme_type, 0)
+
+        if occupation == "employed":
+            return {
+                "Fellowship": 10,
+                "Training": 9,
+                "Entrepreneurship": 8,
+                "Grant": 2,
+                "Job": 0,
+                "Internship": -10,
+                "Scholarship": -25,
+                "Portal": -30,
+                "Service": -30,
+                "Resource": -30,
+            }.get(scheme_type, 0)
+
+        if occupation in {"self_employed", "entrepreneur", "business_owner"}:
+            return {
+                "Entrepreneurship": 12,
+                "Grant": 8,
+                "Training": 5,
+                "Fellowship": 0,
+                "Scholarship": -15,
+                "Internship": -15,
+                "Job": -20,
+                "Portal": -30,
+                "Service": -30,
+                "Resource": -30,
+            }.get(scheme_type, 0)
+
+        return 0
+
+    def _type_rank(self, profile: dict[str, Any], scheme_type: str) -> int:
+        return self._scheme_type_relevance(profile, scheme_type)
+
+    def _filter_explanation_reasons(self, reasons: list[str]) -> list[str]:
+        filtered = []
+        for reason in reasons:
+            normalized = reason.lower()
+            if any(criterion in normalized for criterion in EXPLANATION_CRITERIA):
+                filtered.append(reason)
+        return filtered
+
+    def _equivalent_key(self, title: Any, scheme_type: str) -> str:
+        clean_title = eligibility_service._clean_title(title)
+        normalized_title = re.sub(r"[^a-z0-9]+", " ", clean_title.lower()).strip()
+        return f"{scheme_type.lower()}:{normalized_title}"
+
+    def _build_recommendation_reason(
+        self,
+        reasons: list[str],
+        scheme_type: str,
+        missing_requirements: list[str] | None = None,
+    ) -> str:
+        lowered = [reason.lower() for reason in reasons if reason]
+        if len(lowered) == 1:
+            details = lowered[0]
+        else:
+            details = ", ".join(lowered[:-1]) + f", and {lowered[-1]}"
+
+        verification_notes = [
+            requirement
+            for requirement in missing_requirements or []
+            if "requires verification" in requirement.lower()
+        ]
+        suffix = f" {verification_notes[0]}" if verification_notes else ""
+
+        return f"Recommended because {details}, and your profile aligns with this {scheme_type.lower()}.{suffix}"
 
     def _build_prompt(
         self,
